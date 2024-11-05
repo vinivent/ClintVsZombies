@@ -19,6 +19,50 @@
 #define COLOR_WALL GREEN
 #define COLOR_FLOOR GREEN
 
+
+// Posição no plano 2D
+struct Posicao {
+    int x, y;
+};
+
+
+// Posição e vida do Clint
+struct Clint {
+    struct Posicao posicao;
+    int vida;
+};
+
+
+// Posição e vida do Zumbi
+struct Zombie {
+    struct Posicao posicao;
+    int vida;
+};
+
+
+struct Clint clint;
+struct Zombie zombies[10];
+
+
+void posicionar() {
+
+    // Posição do Clint no mapa
+    clint.posicao.x = MAP_WIDTH / 2;
+    clint.posicao.y = MAP_HEIGHT / 2;
+    clint.vida = 100;
+
+
+    // Posição dos Zumbis no mapa
+    for (int i = 0; i < 10; i++) {
+        zombies[i].posicao.x = rand() % MAP_WIDTH;
+        zombies[i].posicao.y = rand() % MAP_HEIGHT;
+        zombies[i].vida = 50; 
+    }
+}
+
+
+
+// Mapa do jogo
 char map[MAP_HEIGHT][MAP_WIDTH] = {
     "    #######################                     #########################",
     "    #######################                     #########################",
@@ -92,9 +136,8 @@ int main()
     screenDrawMap();
     screenUpdate();
 
-    while (ch != 10) //enter
+    while (ch != 10) 
     {
-        // Handle user input
         if (keyhit()) 
         {
             ch = readch();
