@@ -26,14 +26,15 @@ struct Posicao {
 };
 
 
-// Posição e vida do Clint
+// Clint
 struct Clint {
     struct Posicao posicao;
     int vida;
+    int bullets;
 };
 
 
-// Posição e vida do Zumbi
+// Zombies
 struct Zombie {
     struct Posicao posicao;
     int vida;
@@ -50,6 +51,7 @@ void posicionar() {
     clint.posicao.x = MAP_WIDTH / 2;
     clint.posicao.y = MAP_HEIGHT / 2;
     clint.vida = 100;
+    clint.bullets = 1000000;
 
 
     // Posição dos Zumbis no mapa
