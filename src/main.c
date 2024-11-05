@@ -89,7 +89,6 @@ int main()
     screenInit(1);
     keyboardInit();
     timerInit(50);
-    drawLogo();
     screenDrawMap();
     screenUpdate();
 
