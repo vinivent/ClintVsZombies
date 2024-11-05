@@ -6,24 +6,62 @@
 */
 
 #include <string.h>
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "screen.h"
 #include "keyboard.h"
 #include "timer.h"
 
-int x = 34, y = 12;
-int incX = 1, incY = 1;
+#define MAP_HEIGHT 55
+#define MAP_WIDTH  100
 
-void printHello(int nextX, int nextY)
-{
-    screenSetColor(CYAN, DARKGRAY);
-    screenGotoxy(x, y);
-    printf("           ");
-    x = nextX;
-    y = nextY;
-    screenGotoxy(x, y);
-    printf("Hello World");
+#define COLOR_WALL GREEN
+#define COLOR_FLOOR GREEN
+
+char map[MAP_HEIGHT][MAP_WIDTH] = {
+    "    #######################                     #########################",
+    "    #######################                     #########################",
+    "    ##                                                                 ##",
+    "    ##                                                                 ##",
+    "    ##                                                                 ##",
+    "    ##                                                                 ##",
+    "    ##                                                                 ##",
+    "                                                                         ",
+    "                                                                         ",
+    "                                                                         ",
+    "                                                                         ",
+    "                                                                         ",
+    "    ##                                                                 ##",
+    "    ##                                                                 ##",
+    "    ##                                                                 ##",
+    "    ##                                                                 ##",
+    "    ##                                                                 ##",
+    "    #######################                     #########################",
+};
+
+void screenDrawMap() {
+    for (int y = 0; y < MAP_HEIGHT; y++) {
+        for (int x = 0; x < MAP_WIDTH; x++) {
+            char cell = map[y][x];
+            screenGotoxy(x, y);
+
+            switch(cell) {
+                case '#':
+                    screenSetColor(COLOR_WALL, BLACK);
+                    printf("▓");
+                    break;
+                default:
+                    screenSetColor(COLOR_FLOOR, BLACK);
+                    printf(" ");
+                    break;
+            }
+        }
+    }
+    screenSetColor(WHITE, BLACK);
+    fflush(stdout);
 }
+
 
 void printKey(int ch)
 {
@@ -44,15 +82,15 @@ void printKey(int ch)
     }
 }
 
+
 int main() 
 {
     static int ch = 0;
-
     screenInit(1);
     keyboardInit();
     timerInit(50);
-
-    printHello(x, y);
+    drawLogo();
+    screenDrawMap();
     screenUpdate();
 
     while (ch != 10) //enter
@@ -62,20 +100,6 @@ int main()
         {
             ch = readch();
             printKey(ch);
-            screenUpdate();
-        }
-
-        // Update game state (move elements, verify collision, etc)
-        if (timerTimeOver() == 1)
-        {
-            int newX = x + incX;
-            if (newX >= (MAXX -strlen("Hello World") -1) || newX <= MINX+1) incX = -incX;
-            int newY = y + incY;
-            if (newY >= MAXY-1 || newY <= MINY+1) incY = -incY;
-
-            printKey(ch);
-            printHello(newX, newY);
-
             screenUpdate();
         }
     }
