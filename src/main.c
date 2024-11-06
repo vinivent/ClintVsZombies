@@ -3,7 +3,7 @@
  * Created on Aug, 23th 2023
  * Author: Tiago Barros
  * Based on "From C to C++ course - 2002"
-*/
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -12,95 +12,79 @@
 #include "screen.h"
 #include "keyboard.h"
 #include "timer.h"
+#include <time.h>
 
-#define MAP_HEIGHT 55
-#define MAP_WIDTH  100
+#define MAP_HEIGHT 18
+#define MAP_WIDTH 71
 
 #define COLOR_WALL GREEN
 #define COLOR_FLOOR GREEN
-
+#define COLOR_CLINT YELLOW
+#define COLOR_ZOMBIE RED
+#define MAX_ZOMBIES 10
 
 // Posição no plano 2D
-struct Posicao {
+struct Position
+{
     int x, y;
 };
 
-
 // Clint
-struct Clint {
-    struct Posicao posicao;
-    int vida;
+struct Clint
+{
+    struct Position coords;
+    int health;
     int bullets;
 };
 
-
 // Zombies
-struct Zombie {
-    struct Posicao posicao;
-    int vida;
+struct Zombie
+{
+    struct Position position;
+    int health;
 };
-
-
-struct Clint clint;
-struct Zombie zombies[10];
-
-
-void posicionar() {
-
-    // Posição do Clint no mapa
-    clint.posicao.x = MAP_WIDTH / 2;
-    clint.posicao.y = MAP_HEIGHT / 2;
-    clint.vida = 100;
-    clint.bullets = 1000000;
-
-
-    // Posição dos Zumbis no mapa
-    for (int i = 0; i < 10; i++) {
-        zombies[i].posicao.x = rand() % MAP_WIDTH;
-        zombies[i].posicao.y = rand() % MAP_HEIGHT;
-        zombies[i].vida = 50; 
-    }
-}
-
-
 
 // Mapa do jogo
 char map[MAP_HEIGHT][MAP_WIDTH] = {
-    "    #######################                     #########################",
-    "    #######################                     #########################",
-    "    ##                                                                 ##",
-    "    ##                                                                 ##",
-    "    ##                                                                 ##",
-    "    ##                                                                 ##",
-    "    ##                                                                 ##",
-    "                                                                         ",
-    "                                                                         ",
-    "                                                                         ",
-    "                                                                         ",
-    "                                                                         ",
-    "    ##                                                                 ##",
-    "    ##                                                                 ##",
-    "    ##                                                                 ##",
-    "    ##                                                                 ##",
-    "    ##                                                                 ##",
-    "    #######################                     #########################",
+    "  #######################                     #########################",
+    "  #######################                     #########################",
+    "  ##                                                                 ##",
+    "  ##                                                                 ##",
+    "  ##                                                                 ##",
+    "  ##                                                                 ##",
+    "  ##                                                                 ##",
+    "                                                                       ",
+    "                                                                       ",
+    "                                                                       ",
+    "                                                                       ",
+    "                                                                       ",
+    "  ##                                                                 ##",
+    "  ##                                                                 ##",
+    "  ##                                                                 ##",
+    "  ##                                                                 ##",
+    "  ##                                                                 ##",
+    "  #######################                     #########################",
 };
 
-void screenDrawMap() {
-    for (int y = 0; y < MAP_HEIGHT; y++) {
-        for (int x = 0; x < MAP_WIDTH; x++) {
+void screenDrawMap()
+{
+    for (int y = 0; y < MAP_HEIGHT; y++)
+    {
+        for (int x = 0; x < MAP_WIDTH; x++)
+        {
             char cell = map[y][x];
             screenGotoxy(x, y);
 
-            switch(cell) {
-                case '#':
-                    screenSetColor(COLOR_WALL, BLACK);
-                    printf("▓");
-                    break;
-                default:
-                    screenSetColor(COLOR_FLOOR, BLACK);
-                    printf(" ");
-                    break;
+            switch (cell)
+            {
+            case '#':
+                screenSetColor(COLOR_WALL, BLACK);
+                printf("▓");
+                break;
+            default:
+                screenSetColor(COLOR_FLOOR, BLACK);
+                printf(" ");
+                break;
             }
         }
     }
@@ -108,49 +92,97 @@ void screenDrawMap() {
     fflush(stdout);
 }
 
-
-void printKey(int ch)
+// Clint ASCII Art (Simplified)
+void drawClint(int x, int y)
 {
-    screenSetColor(YELLOW, DARKGRAY);
-    screenGotoxy(35, 22);
-    printf("Key code :");
-
-    screenGotoxy(34, 23);
-    printf("            ");
-    
-    if (ch == 27) screenGotoxy(36, 23);
-    else screenGotoxy(39, 23);
-
-    printf("%d ", ch);
-    while (keyhit())
-    {
-        printf("%d ", readch());
-    }
+    screenGotoxy(x, y);
+    printf(" O ");
+    screenGotoxy(x, y + 1);
+    printf("/|\\");
+    screenGotoxy(x, y + 2);
+    printf("/ \\");
 }
 
-
-int main() 
+// Função para verificar se uma posição é uma parede
+int isWall(int x, int y)
 {
-    static int ch = 0;
-    screenInit(1);
-    keyboardInit();
-    timerInit(50);
-    screenDrawMap();
-    screenUpdate();
+    return (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT || map[y][x] == '#');
+}
 
-    while (ch != 10) 
+// Função para posicionar Clint no centro do mapa
+void initClint(struct Clint *clint)
+{
+    clint->coords.x = MAP_WIDTH / 2;
+    clint->coords.y = MAP_HEIGHT / 2;
+   
+    clint->health = 10;
+    clint->bullets = -1;
+}
+
+int main()
+{
+    srand(time(NULL)); // Initialize random seed
+
+    screenInit(0); // No borders this time
+    keyboardInit();
+    timerInit(75); // Update every 75ms
+
+    struct Clint clint;
+    initClint(&clint);
+
+    while (1)
     {
-        if (keyhit()) 
+        if (timerTimeOver())
         {
-            ch = readch();
-            printKey(ch);
+            screenDrawMap();
+
+            // Draw Clint
+            screenSetColor(COLOR_CLINT, BLACK);
+            drawClint(clint.coords.x, clint.coords.y);
+
             screenUpdate();
         }
-    }
 
-    keyboardDestroy();
-    screenDestroy();
-    timerDestroy();
+        if (keyhit())
+        {
+            int key = readch();
+            int newX = clint.coords.x;
+            int newY = clint.coords.y;
+
+            // Controle de movimento de Clint sem ultrapassar paredes
+            switch (key)
+            {
+            case 'a':
+                newX--;
+                break;
+            case 'd':
+                newX++;
+                break;
+            case 'w':
+                newY--;
+                break;
+            case 's':
+                newY++;
+                break;
+            case 'q':
+                keyboardDestroy();
+                screenDestroy();
+                exit(0);
+            }
+
+            // Atualiza a posição do Clint se o movimento não o levar para uma parede
+            if (newX >= 0 && newX <= MAP_WIDTH - 3 &&  // Left and Right boundaries
+                newY >= 1 && newY <= MAP_HEIGHT - 3 && // Top and Bottom boundaries
+                !isWall(newX, newY) &&
+                !isWall(newX + 2, newY) && 
+                !isWall(newX, newY + 2) &&
+                !isWall(newX + 2, newY + 2)) {
+
+                clint.coords.x = newX;
+                clint.coords.y = newY;
+            }
+        }
+    }
 
     return 0;
 }
