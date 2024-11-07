@@ -15,7 +15,7 @@
 #include <time.h>
 
 #define MAP_HEIGHT 18
-#define MAP_WIDTH 71
+#define MAP_WIDTH 70
 
 #define COLOR_WALL GREEN
 #define COLOR_FLOOR GREEN
@@ -46,24 +46,24 @@ struct Zombie
 
 // Mapa do jogo
 char map[MAP_HEIGHT][MAP_WIDTH] = {
-    "  #######################                     #########################",
-    "  #######################                     #########################",
-    "  ##                                                                 ##",
-    "  ##                                                                 ##",
-    "  ##                                                                 ##",
-    "  ##                                                                 ##",
-    "  ##                                                                 ##",
-    "                                                                       ",
-    "                                                                       ",
-    "                                                                       ",
-    "                                                                       ",
-    "                                                                       ",
-    "  ##                                                                 ##",
-    "  ##                                                                 ##",
-    "  ##                                                                 ##",
-    "  ##                                                                 ##",
-    "  ##                                                                 ##",
-    "  #######################                     #########################",
+    " #######################                     #########################",
+    " #######################                     #########################",
+    " ##                                                                 ##",
+    " ##                                                                 ##",
+    " ##                                                                 ##",
+    " ##                                                                 ##",
+    " ##                                                                 ##",
+    "                                                                      ",
+    "                                                                      ",
+    "                                                                      ",
+    "                                                                      ",
+    "                                                                      ",
+    " ##                                                                 ##",
+    " ##                                                                 ##",
+    " ##                                                                 ##",
+    " ##                                                                 ##",
+    " ##                                                                 ##",
+    " #######################                     #########################",
 };
 
 void screenDrawMap()
@@ -95,18 +95,9 @@ void screenDrawMap()
 // Clint ASCII Art (Simplified)
 void drawClint(int x, int y)
 {
+    screenSetColor(COLOR_CLINT, BLACK);
     screenGotoxy(x, y);
-    printf(" O ");
-    screenGotoxy(x, y + 1);
-    printf("/|\\");
-    screenGotoxy(x, y + 2);
-    printf("/ \\");
-}
-
-// Função para verificar se uma posição é uma parede
-int isWall(int x, int y)
-{
-    return (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT || map[y][x] == '#');
+    printf("▓");
 }
 
 // Função para posicionar Clint no centro do mapa
@@ -117,6 +108,12 @@ void initClint(struct Clint *clint)
    
     clint->health = 10;
     clint->bullets = -1;
+}
+
+// Função para verificar se uma posição é uma parede
+int isWall(int x, int y)
+{
+    return (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT || map[y][x] == '#');
 }
 
 int main()
@@ -149,7 +146,6 @@ int main()
             int newX = clint.coords.x;
             int newY = clint.coords.y;
 
-            // Controle de movimento de Clint sem ultrapassar paredes
             switch (key)
             {
             case 'a':
@@ -170,14 +166,8 @@ int main()
                 exit(0);
             }
 
-            // Atualiza a posição do Clint se o movimento não o levar para uma parede
-            if (newX >= 0 && newX <= MAP_WIDTH - 3 &&  // Left and Right boundaries
-                newY >= 1 && newY <= MAP_HEIGHT - 3 && // Top and Bottom boundaries
-                !isWall(newX, newY) &&
-                !isWall(newX + 2, newY) && 
-                !isWall(newX, newY + 2) &&
-                !isWall(newX + 2, newY + 2)) {
-
+            if (!isWall(newX, newY) && newX >= 0 && newX < MAP_WIDTH && newY >= 0 && newY < MAP_HEIGHT)
+            {
                 clint.coords.x = newX;
                 clint.coords.y = newY;
             }
