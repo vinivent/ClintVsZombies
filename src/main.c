@@ -8,7 +8,7 @@
 #include <time.h>
 
 #define MAP_HEIGHT 22
-#define MAP_WIDTH 70
+#define MAP_WIDTH 69
 
 #define COLOR_WALL GREEN
 #define COLOR_FLOOR GREEN
@@ -50,29 +50,28 @@ struct Bullet
 
 // Mapa do jogo
 char map[MAP_HEIGHT][MAP_WIDTH] = {
-    " #######################                     #########################",
-    " #######################                     #########################",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-
-    "                                                                      ",
-    "                                                                      ",
-    "                                                                      ",
-    "                                                                      ",
-    "                                                                      ",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " ##                                                                 ##",
-    " #######################                     #########################",
+    "#########################                    ########################",
+    "#########################                    ########################",
+    "###                                                                ##",
+    "###                                                                ##",
+    "###                                                                ##",
+    "###                                                                ##",
+    "###                                                                ##",
+    "###                                                                ##",
+    "###                                                                ##",
+    "                                                                     ",
+    "                                                                     ",
+    "                                                                     ",
+    "                                                                     ",
+    "                                                                     ",
+    "###                                                                ##",
+    "###                                                                ##",
+    "###                                                                ##",
+    "###                                                                ##",
+    "###                                                                ##",
+    "###                                                                ##",
+    "###                                                                ##",
+    "#########################                    ########################",
 
 };
 
@@ -131,7 +130,7 @@ void initBullet(struct Bullet *bullet, struct Clint *clint)
 {
     if (clint->direction == 0)
     {
-        bullet->direction = clint->direction; // Ela é criada com a direção que o Clint está olhando
+        bullet->direction = clint->direction;   // Ela é criada com a direção que o Clint está olhando
         bullet->coords.x = clint->coords.x;
         bullet->coords.y = clint->coords.y - 1; // Ela é criada um espaço na frente do Clint
         bullet->onScreen = 1;                   // Atirou, então agora a bala está na tela
@@ -205,14 +204,6 @@ struct Bullet bullets[MAX_BULLETS];
 int numBullets = 0;
 int reloadTime = 0;
 
-void showAmmo()
-{
-}
-
-void showLife()
-{
-}
-
 int main()
 {
     srand(time(NULL)); // Initialize random seed
@@ -236,7 +227,8 @@ int main()
             // Recarregamento
             if (clint.ammo < MAX_BULLETS && reloadTime <= 0)
             {
-                reloadTime = 500 / 75; // Recarrega uma bala a cada ms
+                reloadTime = 2500 / 75; // Recarrega uma bala a cada ms
+                clint.ammo++;
             }
             else if (reloadTime > 0)
             {
