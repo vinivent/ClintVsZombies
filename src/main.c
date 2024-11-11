@@ -117,7 +117,7 @@ struct Position getRandomEntrance()
     return mapEntrances[randomIndex];
 }
 
-struct Zombie zombies[MAX_ZOMBIES];
+struct Zombie *zombies;
 int numZombies = 0;
 
 void initZombie(struct Zombie *zombie)
@@ -316,9 +316,8 @@ void checkClintDamage(struct Clint *clint)
     {
         if (checkCollision(clint->coords.x, clint->coords.y, zombies[i].coords.x, zombies[i].coords.y))
         {
-            clint->health--; // Reduz a vida de Clint
-            // Talvez adicione uma pequena espera antes de causar dano novamente
-            usleep(100000); // 100ms de espera, ajuste se necessário
+            clint->health--; 
+            usleep(100000); 
             break;
         }
     }
@@ -326,16 +325,20 @@ void checkClintDamage(struct Clint *clint)
 
 int main()
 {
-    srand(time(NULL)); // Initialize random seed
-
-    screenInit(0); // No borders this time
+    screenInit(0); 
     keyboardInit();
-    timerInit(75); // Update every 75ms
+    timerInit(75); 
     struct Clint clint;
     initClint(&clint);
 
     bullets = (struct Bullet*) malloc(MAX_BULLETS * sizeof(struct Bullet));
     if (bullets == NULL)
+    {
+        return -1;
+    }
+
+    zombies = (struct Zombie*) malloc(MAX_ZOMBIES * sizeof(struct Zombie));
+    if (zombies == NULL)
     {
         return -1;
     }
@@ -346,7 +349,6 @@ int main()
         {
             screenDrawMap();
 
-            // Draw Clint
             drawClint(clint.coords.x, clint.coords.y);
 
             spawnZombie(&clint);
