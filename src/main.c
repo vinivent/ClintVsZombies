@@ -12,8 +12,6 @@
 
 #define COLOR_WALL GREEN
 #define COLOR_FLOOR GREEN
-#define COLOR_CLINT YELLOW
-#define COLOR_ZOMBIE RED
 #define COLOR_BULLET BLUE
 #define MAX_ZOMBIES 10
 #define MAX_BULLETS 8
@@ -103,7 +101,7 @@ void screenDrawMap()
     fflush(stdout);
 }
 
-// Entradas do mapa (defina as coordenadas das entradas)
+// Entradas do mapa (defina as coordenadas das entradas)    
 struct Position mapEntrances[] = {
     {MAP_WIDTH / 2, 2},              // Entrada 1: Topo
     {2, MAP_HEIGHT / 2},             // Entrada 2: Esquerda
@@ -131,16 +129,14 @@ void initZombie(struct Zombie *zombie)
 
 void drawZombie(int x, int y)
 {
-    screenSetColor(COLOR_ZOMBIE, BLACK);
     screenGotoxy(x, y);
-    printf("▓");
+    printf("🧟‍♂️");
 }
 
 void drawClint(int x, int y)
 {
-    screenSetColor(COLOR_CLINT, BLACK);
     screenGotoxy(x, y);
-    printf("▓");
+    printf("🤠");
 }
 
 void drawBullet(int x, int y)
@@ -278,7 +274,7 @@ void updateBullet(struct Bullet *bullet)
     bullet->coords.y = nextY;
 }
 
-struct Bullet bullets[MAX_BULLETS];
+struct Bullet *bullets;
 int reloadTime = 0;
 
 int score = 0;
@@ -288,7 +284,7 @@ int checkCollision(int x1, int y1, int x2, int y2)
     return x1 == x2 && y1 == y2;
 }
 
-void updatesZombie(struct Clint *clint)
+void spawnZombie(struct Clint *clint)
 {
     for (int i = 0; i < MAX_ZOMBIES; i++)
     { // Iterar sobre todos os zumbis possíveis
@@ -338,6 +334,12 @@ int main()
     struct Clint clint;
     initClint(&clint);
 
+    bullets = (struct Bullet*) malloc(MAX_BULLETS * sizeof(struct Bullet));
+    if (bullets == NULL)
+    {
+        return -1;
+    }
+
     while (1)
     {
         if (timerTimeOver())
@@ -348,7 +350,7 @@ int main()
             screenSetColor(COLOR_CLINT, BLACK);
             drawClint(clint.coords.x, clint.coords.y);
 
-            updatesZombie(&clint);
+            spawnZombie(&clint);
             checkClintDamage(&clint);
 
             // Atualiza o tempo de recarga e verifica se há balas disponíveis
@@ -474,6 +476,8 @@ int main()
             }
         }
     }
+
+    free(bullets);
 
     return 0;
 }
