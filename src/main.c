@@ -12,7 +12,7 @@
 
 #define COLOR_WALL GREEN
 #define COLOR_FLOOR GREEN
-#define COLOR_BULLET BLUE
+#define COLOR_BULLET YELLOW
 #define MAX_ZOMBIES 10
 #define MAX_BULLETS 8
 
@@ -130,7 +130,7 @@ void initZombie(struct Zombie *zombie)
 void drawZombie(int x, int y)
 {
     screenGotoxy(x, y);
-    printf("🧟‍♂️");
+    printf("🧟");
 }
 
 void drawClint(int x, int y)
@@ -347,7 +347,6 @@ int main()
             screenDrawMap();
 
             // Draw Clint
-            screenSetColor(COLOR_CLINT, BLACK);
             drawClint(clint.coords.x, clint.coords.y);
 
             spawnZombie(&clint);
@@ -379,25 +378,22 @@ int main()
             }
 
             // Mostra a pontuação na tela
-            screenGotoxy(MAP_WIDTH / 2 - 6, MAP_HEIGHT); // Centraliza o texto
-            screenSetColor(WHITE, BLACK);
-            printf("Eliminações: %d", score);
+            screenGotoxy(MAP_WIDTH / 2 - 3, MAP_HEIGHT); // Centraliza o texto
+            printf("💀: %d", score);
 
             // Mostra a munição na tela
             screenGotoxy(0, MAP_HEIGHT); // Posiciona o texto
-            screenSetColor(WHITE, BLACK);
-            printf("︻┳═-: %d", clint.ammo);
+            printf("🔫: %d", clint.ammo);
 
             // Limpa a linha dos corações antes de atualizar
             screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT);
-            screenSetColor(RED, BLACK);
-            printf("                      "); // Espaço suficiente para cobrir a linha
+            printf("                             "); // Espaço suficiente para cobrir a linha
 
             // Exibe a quantidade correta de corações
             screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT);
             for (int i = 0; i < clint.health; i++)
             {
-                printf("♥ ");
+                printf("❤️ ");
             }
 
             if (clint.health <= 0) {
