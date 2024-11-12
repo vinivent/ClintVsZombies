@@ -323,11 +323,37 @@ void checkClintDamage(struct Clint *clint)
     }
 }
 
+void menu() {
+    system("clear"); 
+    printf("=== MENU PRINCIPAL ===\n");
+    printf("1. Iniciar Jogo\n");
+    printf("2. Sair\n");
+    printf("======================\n");
+    printf("\nEscolha uma opcao: ");
+    printf("\n");
+}
+
 int main()
 {
     screenInit(0); 
     keyboardInit();
     timerInit(75); 
+    menu();
+
+    int option = 0;
+    while (1) {
+        if (keyhit()) {
+            int key = readch();
+            if (key == '1') {
+                system("clear");
+                break; 
+            } else if (key == '2') {
+                system("clear");
+                return 0; 
+            }
+        }
+    }
+
     struct Clint clint;
     initClint(&clint);
 
