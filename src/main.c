@@ -13,8 +13,8 @@
 #define COLOR_WALL GREEN
 #define COLOR_FLOOR GREEN
 #define COLOR_BULLET YELLOW
-#define MAX_ZOMBIES 10
-#define MAX_BULLETS 8
+#define MAX_ZOMBIES 10 
+#define MAX_BULLETS 8 
 
 // Posição no plano 2D
 struct Position
@@ -323,36 +323,63 @@ void checkClintDamage(struct Clint *clint)
     }
 }
 
-void menu() {
-    system("clear"); 
-    printf("=== MENU PRINCIPAL ===\n");
-    printf("1. Iniciar Jogo\n");
-    printf("2. Sair\n");
-    printf("======================\n");
-    printf("\nEscolha uma opcao: ");
-    printf("\n");
+void drawMenu() {
+    screenSetColor(WHITE, BLACK);
+    printf("╔════════════════════════════════════╗\n");
+    printf("║                                    ║\n");
+    printf("║     🌵  BEM-VINDO AO JOGO!  🌵     ║\n");
+    printf("║                                    ║\n");
+    printf("║      1. Iniciar Jogo               ║\n");
+    printf("║      2. Instruções                 ║\n");
+    printf("║      3. Sair                       ║\n");
+    printf("║                                    ║\n");
+    printf("╚════════════════════════════════════╝\n");
 }
 
-int main()
-{
+void showInstructions() {
+    system("clear"); 
+
+    printf("╔════════════════════════════════════════╗\n");
+    printf("║       📚 INSTRUÇÕES DO JOGO 📚         ║\n");
+    printf("╚════════════════════════════════════════╝\n");
+    printf("\n");
+    printf("Use as teclas WASD para mover Clint (🤠) pelo mapa.\n");
+    printf("Pressione 'f' para atirar!\n");
+    printf("Evite os zumbis (🧟) e tente sobreviver!\n\n");
+    printf("Pressione qualquer tecla para voltar ao menu...\n");
+
+    getchar(); 
+}
+
+int main() {
     screenInit(0); 
     keyboardInit();
     timerInit(75); 
-    menu();
 
     int option = 0;
+    int menuDrawn = 0; 
+
     while (1) {
+        if (!menuDrawn) { 
+            drawMenu();
+            menuDrawn = 1; 
+        }
+
         if (keyhit()) {
-            int key = readch();
+            int key = readch();  
             if (key == '1') {
-                system("clear");
-                break; 
+                system("clear");  
+                break;  
             } else if (key == '2') {
-                system("clear");
-                return 0; 
+                showInstructions();  
+                system("clear"); 
+                menuDrawn = 0; 
+            } else if (key == '3') {
+                system("clear"); 
+                return 0;  
             }
         }
-    }
+    }  
 
     struct Clint clint;
     initClint(&clint);
