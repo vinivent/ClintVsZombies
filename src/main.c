@@ -395,7 +395,7 @@ int main()
             screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT);
             for (int i = 0; i < clint.health; i++)
             {
-                printf("❤️ ");
+                printf("❤️");
             }
 
             if (clint.health <= 0) {
@@ -467,7 +467,7 @@ int main()
             }
 
             // Limitação das paredes
-            if (!isWall(newX, newY) && newX >= 0 && newX < MAP_WIDTH && newY >= 0 && newY < MAP_HEIGHT)
+            if (!isWall(newX, newY) && !isWall(newX + 1, newY) && newX >= 0 && newX < MAP_WIDTH && newY >= 0 && newY < MAP_HEIGHT)
             {
                 clint.coords.x = newX;
                 clint.coords.y = newY;
@@ -476,6 +476,7 @@ int main()
     }
 
     free(bullets);
+    free(zombies);
 
     return 0;
 }
