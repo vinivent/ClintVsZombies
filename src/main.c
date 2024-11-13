@@ -323,7 +323,7 @@ void checkClintDamage(struct Clint *clint)
     }
 }
 
-void drawMenu() {
+void menu() {
     screenSetColor(WHITE, BLACK);
     printf("╔════════════════════════════════════╗\n");
     printf("║                                    ║\n");
@@ -351,185 +351,116 @@ void showInstructions() {
     getchar(); 
 }
 
+void showVictory() {
+    screenSetColor(WHITE, BLACK);
+    printf("╔════════════════════════════════════╗\n");
+    printf("║             ════════════           ║\n");
+    printf("║     🌵     ║ PARABÉNS! ║     🌵   ║\n");
+    printf("║             ════════════           ║\n");
+    printf("║    VOCÊ DERROTOU TODOS OS ZUMBIS   ║\n");
+    printf("║         PARA JOGAR NOVAMENTE       ║\n");
+    printf("║        PRESSIONE A TECLA  'R'      ║\n");
+    printf("║                                    ║\n");
+    printf("╚════════════════════════════════════╝\n");
+}
+
+void showDefeat() {
+    screenClear();
+    screenSetColor(RED, BLACK);
+    printf("\n");
+    printf("╔════════════════════════════════════╗\n");
+    printf("║      ════════════════════════      ║\n");
+    printf("║  🪦 ║ QUE PENA, VOCÊ MORREU ║ 🪦   ║\n");
+    printf("║      ════════════════════════      ║\n");
+    printf("║ OS ZUMBIS CONSEGUIRAM TE ENCONTRAR ║\n");
+    printf("║         PARA TENTAR NOVAMENTE      ║\n");
+    printf("║        PRESSIONE A TECLA  'R'      ║\n");
+    printf("║             PARA SAIR              ║\n");
+    printf("║        PRESSIONE A TECLA  'Q'      ║\n");
+    printf("╚════════════════════════════════════╝\n");
+}
+
 int main() {
-    screenInit(0); 
-    keyboardInit();
-    timerInit(75); 
+    screenInit(0); keyboardInit(); timerInit(75);
 
-    int option = 0;
-    int menuDrawn = 0; 
-
+    int option = 0, drawMenu = 0;
     while (1) {
-        if (!menuDrawn) { 
-            drawMenu();
-            menuDrawn = 1; 
-        }
+        if (!drawMenu) { menu(); drawMenu = 1; }
 
         if (keyhit()) {
-            int key = readch();  
-            if (key == '1') {
-                system("clear");  
-                break;  
-            } else if (key == '2') {
-                showInstructions();  
-                system("clear"); 
-                menuDrawn = 0; 
-            } else if (key == '3') {
-                system("clear"); 
-                return 0;  
-            }
+            int key = readch();
+            if (key == '1') { system("clear"); break; }
+            else if (key == '2') { showInstructions(); system("clear"); drawMenu = 0; }
+            else if (key == '3') { system("clear"); return 0; }
         }
-    }  
+    }
 
     struct Clint clint;
     initClint(&clint);
+    bullets = malloc(MAX_BULLETS * sizeof(struct Bullet));
+    zombies = malloc(MAX_ZOMBIES * sizeof(struct Zombie));
+    if (!bullets || !zombies) return -1;
 
-    bullets = (struct Bullet*) malloc(MAX_BULLETS * sizeof(struct Bullet));
-    if (bullets == NULL)
-    {
-        return -1;
-    }
-
-    zombies = (struct Zombie*) malloc(MAX_ZOMBIES * sizeof(struct Zombie));
-    if (zombies == NULL)
-    {
-        return -1;
-    }
-
-    while (1)
-    {
-        if (timerTimeOver())
-        {
+    while (1) {
+        if (timerTimeOver()) {
             screenDrawMap();
-
             drawClint(clint.coords.x, clint.coords.y);
+            spawnZombie(&clint); checkClintDamage(&clint);
 
-            spawnZombie(&clint);
-            checkClintDamage(&clint);
-
-            // Atualiza o tempo de recarga e verifica se há balas disponíveis
-            if (clint.ammo < MAX_BULLETS && reloadTime <= 0)
-            {
-                reloadTime = 2500 / 75; // Recarrega uma bala a cada ciclo
-                clint.ammo++;
-            }
-            else if (reloadTime > 0)
-            {
-                reloadTime--;
-            }
+            if (clint.ammo < MAX_BULLETS && reloadTime <= 0) { reloadTime = 2500 / 75; clint.ammo++; }
+            else if (reloadTime > 0) reloadTime--;
 
             if (numZombies < MAX_ZOMBIES && rand() % 100 < 2)
-            { // 5% de chance de gerar um zumbi a cada loop
                 for (int i = 0; i < MAX_ZOMBIES; i++)
-                {
-                    if (!zombies[i].onScreen)
-                    { // Encontra um slot vazio para um novo zumbi
-                        initZombie(&zombies[i]);
-                        zombies[i].onScreen = 1;
-                        numZombies++;
-                        break; // Sai do loop após criar um zumbi
-                    }
-                }
-            }
+                    if (!zombies[i].onScreen) { initZombie(&zombies[i]); zombies[i].onScreen = 1; numZombies++; break; }
 
-            // Mostra a pontuação na tela
-            screenGotoxy(MAP_WIDTH / 2 - 3, MAP_HEIGHT); // Centraliza o texto
-            printf("💀: %d", score);
-
-            // Mostra a munição na tela
-            screenGotoxy(0, MAP_HEIGHT); // Posiciona o texto
-            printf("🔫: %d", clint.ammo);
-
-            // Limpa a linha dos corações antes de atualizar
+            screenGotoxy(MAP_WIDTH / 2 - 3, MAP_HEIGHT); printf("💀: %d", score);
+            screenGotoxy(0, MAP_HEIGHT); printf("🔫: %d", clint.ammo);
+            screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT); printf("                             ");
             screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT);
-            printf("                             "); // Espaço suficiente para cobrir a linha
-
-            // Exibe a quantidade correta de corações
-            screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT);
-            for (int i = 0; i < clint.health; i++)
-            {
-                printf("❤️");
-            }
+            for (int i = 0; i < clint.health; i++) printf("❤️");
 
             if (clint.health <= 0) {
                 screenGotoxy(MAP_WIDTH / 2 - 6, MAP_HEIGHT + 2);
-                screenSetColor(RED, BLACK);
-                printf("GAME OVER!");
-                fflush(stdout);
-                break; // Sai do loop principal para encerrar o jogo
-            }
+                screenSetColor(RED, BLACK); showDefeat(); fflush(stdout);
 
-
-            fflush(stdout); // Garante que a saída seja exibida imediatamente
-
-            for (int i = 0; i < MAX_BULLETS; i++)
-            {
-                if (bullets[i].onScreen)
-                {
-                    updateBullet(&bullets[i]);
-                    if (bullets[i].onScreen)
-                    { // Verifica novamente após a atualização
-                        drawBullet(bullets[i].coords.x, bullets[i].coords.y);
+                while (1) {
+                    if (keyhit()) {
+                        int key = readch();
+                        if (key == 'r') { // Reset game
+                            clint = (struct Clint) { .health = 10, .ammo = 8, .coords = { MAP_WIDTH / 2, MAP_HEIGHT / 2 } };
+                            score = numZombies = 0;
+                            memset(bullets, 0, MAX_BULLETS * sizeof(struct Bullet));
+                            memset(zombies, 0, MAX_ZOMBIES * sizeof(struct Zombie));
+                            system("clear"); break;
+                        } else if (key == 'q') { free(bullets); free(zombies); return 0; }
                     }
                 }
             }
 
+            fflush(stdout);
+            for (int i = 0; i < MAX_BULLETS; i++)
+                if (bullets[i].onScreen) { updateBullet(&bullets[i]); if (bullets[i].onScreen) drawBullet(bullets[i].coords.x, bullets[i].coords.y); }
+            
             screenUpdate();
         }
 
-        if (keyhit())
-        {
+        if (keyhit()) {
+            int key = readch(), newX = clint.coords.x, newY = clint.coords.y;
 
-            int key = readch();
-            int newX = clint.coords.x;
-            int newY = clint.coords.y;
+            if (key == 'w') newY--, clint.direction = 0;
+            else if (key == 'a') newX--, clint.direction = 1;
+            else if (key == 's') newY++, clint.direction = 2;
+            else if (key == 'd') newX++, clint.direction = 3;
+            else if (key == 'f' && clint.ammo > 0)
+                for (int i = 0; i < MAX_BULLETS; i++)
+                    if (!bullets[i].onScreen) { initBullet(&bullets[i], &clint); bullets[i].onScreen = 1; clint.ammo--; break; }
 
-            switch (key)
-            {
-            case 'w':
-                newY--;
-                clint.direction = 0;
-                break;
-            case 'a':
-                newX--;
-                clint.direction = 1;
-                break;
-            case 's':
-                newY++;
-                clint.direction = 2;
-                break;
-            case 'd':
-                newX++;
-                clint.direction = 3;
-                break;
-            case 'f':
-                if (clint.ammo > 0)
-                {
-                    for (int i = 0; i < MAX_BULLETS; i++)
-                    {
-                        if (!bullets[i].onScreen)
-                        {
-                            initBullet(&bullets[i], &clint);
-                            bullets[i].onScreen = 1;
-                            clint.ammo--;
-                            break;
-                        }
-                    }
-                }
-                break;
-            }
-
-            // Limitação das paredes
             if (!isWall(newX, newY) && !isWall(newX + 1, newY) && newX >= 0 && newX < MAP_WIDTH && newY >= 0 && newY < MAP_HEIGHT)
-            {
-                clint.coords.x = newX;
-                clint.coords.y = newY;
-            }
+                clint.coords.x = newX, clint.coords.y = newY;
         }
     }
 
-    free(bullets);
-    free(zombies);
-
+    free(bullets); free(zombies);
     return 0;
 }
