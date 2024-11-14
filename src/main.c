@@ -1,4 +1,4 @@
-#include <string.h>
+ #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -6,6 +6,7 @@
 #include "keyboard.h"
 #include "timer.h"
 #include <time.h>
+#include "menus.h"
 
 #define MAP_HEIGHT 22
 #define MAP_WIDTH 69
@@ -323,19 +324,6 @@ void checkClintDamage(struct Clint *clint)
     }
 }
 
-void menu() {
-    screenSetColor(WHITE, BLACK);
-    printf("╔════════════════════════════════════╗\n");
-    printf("║                                    ║\n");
-    printf("║     🌵  BEM-VINDO AO JOGO!  🌵     ║\n");
-    printf("║                                    ║\n");
-    printf("║      1. Iniciar Jogo               ║\n");
-    printf("║      2. Instruções                 ║\n");
-    printf("║      3. Sair                       ║\n");
-    printf("║                                    ║\n");
-    printf("╚════════════════════════════════════╝\n");
-}
-
 void showInstructions() {
     system("clear"); 
 
@@ -383,9 +371,9 @@ void showDefeat() {
 int main() {
     screenInit(0); keyboardInit(); timerInit(75);
 
-    int option = 0, drawMenu = 0;
+     int option = 0, drawMenu = 0;
     while (1) {
-        if (!drawMenu) { menu(); drawMenu = 1; }
+        if (!drawMenu) { artmenu(); drawMenu = 1; }
 
         if (keyhit()) {
             int key = readch();
