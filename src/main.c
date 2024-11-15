@@ -6,10 +6,9 @@
 #include "keyboard.h"
 #include "timer.h"
 #include <time.h>
-#include "menus.h"
 
-#define MAP_HEIGHT 22
-#define MAP_WIDTH 69
+#define MAP_HEIGHT 24
+#define MAP_WIDTH 72
 
 #define COLOR_WALL GREEN
 #define COLOR_FLOOR GREEN
@@ -51,28 +50,32 @@ struct Bullet
 
 // Mapa do jogo
 char map[MAP_HEIGHT][MAP_WIDTH] = {
-    "#########################                    ########################",
-    "#########################                    ########################",
-    "###                                                                ##",
-    "###                                                                ##",
-    "###                                                                ##",
-    "###                                                                ##",
-    "###                                                                ##",
-    "###                                                                ##",
-    "###                                                                ##",
-    "                                                                     ",
-    "                                                                     ",
-    "                                                                     ",
-    "                                                                     ",
-    "                                                                     ",
-    "###                                                                ##",
-    "###                                                                ##",
-    "###                                                                ##",
-    "###                                                                ##",
-    "###                                                                ##",
-    "###                                                                ##",
-    "###                                                                ##",
-    "#########################                    ########################",
+    "############################                 ###########################",
+    "############################                 ###########################",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "                                                                        ",
+    "                                                                        ",
+    "                                                                        ",
+    "                                                                        ",
+    "                                                                        ",
+    "                                                                        ",
+    "                                                                        ",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "###                                                                   ##",
+    "############################                 ###########################",
+
+
 
 };
 
@@ -324,61 +327,67 @@ void checkClintDamage(struct Clint *clint)
     }
 }
 
-void showInstructions() {
-    system("clear"); 
+void showStartArt() {
+    FILE *file = fopen("menu/start.txt", "r");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo start.txt\n");
+        return;
+    }
 
-    printf("╔════════════════════════════════════════╗\n");
-    printf("║       📚 INSTRUÇÕES DO JOGO 📚         ║\n");
-    printf("╚════════════════════════════════════════╝\n");
-    printf("\n");
-    printf("Use as teclas WASD para mover Clint (🤠) pelo mapa.\n");
-    printf("Pressione 'f' para atirar!\n");
-    printf("Evite os zumbis (🧟) e tente sobreviver!\n\n");
-    printf("Pressione qualquer tecla para voltar ao menu...\n");
-
-    getchar(); 
-}
-
-void showVictory() {
-    screenSetColor(WHITE, BLACK);
-    printf("╔════════════════════════════════════╗\n");
-    printf("║             ════════════           ║\n");
-    printf("║     🌵     ║ PARABÉNS! ║     🌵   ║\n");
-    printf("║             ════════════           ║\n");
-    printf("║    VOCÊ DERROTOU TODOS OS ZUMBIS   ║\n");
-    printf("║         PARA JOGAR NOVAMENTE       ║\n");
-    printf("║        PRESSIONE A TECLA  'R'      ║\n");
-    printf("║                                    ║\n");
-    printf("╚════════════════════════════════════╝\n");
-}
-
-void showDefeat() {
-    screenClear();
     screenSetColor(RED, BLACK);
-    printf("\n");
-    printf("╔════════════════════════════════════╗\n");
-    printf("║      ════════════════════════      ║\n");
-    printf("║  🪦 ║ QUE PENA, VOCÊ MORREU ║ 🪦   ║\n");
-    printf("║      ════════════════════════      ║\n");
-    printf("║ OS ZUMBIS CONSEGUIRAM TE ENCONTRAR ║\n");
-    printf("║         PARA TENTAR NOVAMENTE      ║\n");
-    printf("║        PRESSIONE A TECLA  'R'      ║\n");
-    printf("║             PARA SAIR              ║\n");
-    printf("║        PRESSIONE A TECLA  'Q'      ║\n");
-    printf("╚════════════════════════════════════╝\n");
+
+    char ch;
+    while ((ch = fgetc(file)) != EOF) {
+        putchar(ch); 
+    }
+
+    fclose(file);
+
+    // Exibir o menu abaixo da arte
+    screenSetColor(WHITE, BLACK);
+    printf("\n\n\t\t\t\tEscolha uma opção\n");
+    printf("\t\t\t\t1. Iniciar Jogo\n");
+    printf("\t\t\t\t2. Instruções\n");
+    printf("\t\t\t\t3. Sair\n");
 }
+
+
+void showGameOver() {
+    screenClear();  // Limpa a tela antes de mostrar a tela de game over
+    FILE *file = fopen("menu/gameover.txt", "r");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo gameover.txt\n");
+        return;
+    }
+
+    // Define a cor para a tela de Game Over (você pode mudar conforme necessário)
+    screenSetColor(RED, BLACK);
+
+    char ch;
+    while ((ch = fgetc(file)) != EOF) {
+        putchar(ch);  // Imprime cada caractere do arquivo
+    }
+
+    fclose(file);  // Fecha o arquivo após terminar de ler
+
+    screenSetColor(WHITE, BLACK);
+    printf("\n\n\t\t\t\t\t\t   Não foi dessa vez!\n");
+    printf("\t\t\t\t\tInsira r para reiniciar o jogo ou q para sair.\n");
+
+}
+
 
 int main() {
     screenInit(0); keyboardInit(); timerInit(75);
 
      int option = 0, drawMenu = 0;
     while (1) {
-        if (!drawMenu) { artmenu(); drawMenu = 1; }
+        if (!drawMenu) { showStartArt(); drawMenu = 1; }
 
         if (keyhit()) {
             int key = readch();
             if (key == '1') { system("clear"); break; }
-            else if (key == '2') { showInstructions(); system("clear"); drawMenu = 0; }
+            else if (key == '2') { system("clear"); drawMenu = 0; }
             else if (key == '3') { system("clear"); return 0; }
         }
     }
@@ -408,23 +417,31 @@ int main() {
             screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT);
             for (int i = 0; i < clint.health; i++) printf("❤️");
 
-            if (clint.health <= 0) {
-                screenGotoxy(MAP_WIDTH / 2 - 6, MAP_HEIGHT + 2);
-                screenSetColor(RED, BLACK); showDefeat(); fflush(stdout);
+        if (clint.health <= 0) {
+            screenGotoxy(MAP_WIDTH / 2 - 6, MAP_HEIGHT + 2);
+            screenSetColor(RED, BLACK);
+            showGameOver();  
+            fflush(stdout);
 
-                while (1) {
-                    if (keyhit()) {
-                        int key = readch();
-                        if (key == 'r') { // Reset game
-                            clint = (struct Clint) { .health = 10, .ammo = 8, .coords = { MAP_WIDTH / 2, MAP_HEIGHT / 2 } };
-                            score = numZombies = 0;
-                            memset(bullets, 0, MAX_BULLETS * sizeof(struct Bullet));
-                            memset(zombies, 0, MAX_ZOMBIES * sizeof(struct Zombie));
-                            system("clear"); break;
-                        } else if (key == 'q') { free(bullets); free(zombies); return 0; }
+            while (1) {
+                if (keyhit()) {
+                    int key = readch();
+                    if (key == 'r') {  // Resetar o jogo
+                        clint = (struct Clint) { .health = 10, .ammo = 8, .coords = { MAP_WIDTH / 2, MAP_HEIGHT / 2 } };
+                        score = numZombies = 0;
+                        memset(bullets, 0, MAX_BULLETS * sizeof(struct Bullet));
+                        memset(zombies, 0, MAX_ZOMBIES * sizeof(struct Zombie));
+                        system("clear");
+                        break;
+                    } else if (key == 'q') {  // Sair do jogo
+                        free(bullets);
+                        free(zombies);
+                        return 0;
                     }
                 }
             }
+        }
+
 
             fflush(stdout);
             for (int i = 0; i < MAX_BULLETS; i++)
