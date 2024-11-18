@@ -322,30 +322,38 @@ void spawnZombie(struct Clint *clint, int frameCount, int elapsedTime) {
     }
 }
 
-void checkClintDamage(struct Clint *clint)
-{
-    for (int i = 0; i < numZombies; i++)
-    {
-        if (checkCollision(clint->coords.x, clint->coords.y, zombies[i].coords.x, zombies[i].coords.y))
-        {
-            clint->health--; 
-            usleep(100000); 
-            break;
+void checkClintDamage(struct Clint *clint) {
+    for (int i = 0; i < zombieCapacity; i++) { 
+        if (zombies[i].onScreen && 
+            checkCollision(clint->coords.x, clint->coords.y, zombies[i].coords.x, zombies[i].coords.y)) {
+            clint->health--;
+            break; 
         }
     }
 }
 
-void menu() {
+void showStartArt() {
+    FILE *file = fopen("menu/start.txt", "r");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo start.txt\n");
+        return;
+    }
+
+    screenSetColor(RED, BLACK);
+
+    char ch;
+    while ((ch = fgetc(file)) != EOF) {
+        putchar(ch); 
+    }
+
+    fclose(file);
+
     screenSetColor(WHITE, BLACK);
-    printf("╔════════════════════════════════════╗\n");
-    printf("║                                    ║\n");
-    printf("║     🌵  BEM-VINDO AO JOGO!  🌵     ║\n");
-    printf("║                                    ║\n");
-    printf("║      1. Iniciar Jogo               ║\n");
-    printf("║      2. Instruções                 ║\n");
-    printf("║      3. Sair                       ║\n");
-    printf("║                                    ║\n");
-    printf("╚════════════════════════════════════╝\n");
+    printf("\n\n\t\t\t  Bem vindo ao Clint Vs Zombies!\n");
+    printf("\n\n\t\t\t\tEscolha uma opção:\n");
+    printf("\t\t\t\t1. Iniciar Jogo\n");
+    printf("\t\t\t\t2. Instruções\n");
+    printf("\t\t\t\t3. Sair\n");
 }
 
 void showInstructions() {
@@ -363,62 +371,72 @@ void showInstructions() {
     getchar(); 
 }
 
+
 void showVictory() {
-    screenSetColor(WHITE, BLACK);
-    printf("╔════════════════════════════════════╗\n");
-    printf("║             ════════════           ║\n");
-    printf("║     🌵     ║ PARABÉNS! ║     🌵    ║\n");
-    printf("║             ════════════           ║\n");
-    printf("║    VOCÊ DERROTOU TODOS OS ZUMBIS   ║\n");
-    printf("║         PARA JOGAR NOVAMENTE       ║\n");
-    printf("║        PRESSIONE A TECLA  'R'      ║\n");
-    printf("║             PARA SAIR              ║\n");
-    printf("║        PRESSIONE A TECLA  'Q'      ║\n");
-    printf("╚════════════════════════════════════╝\n");
+    screenClear();  
+    FILE *file = fopen("menu/victory.txt", "r");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo victory.txt\n");
+        return;
+    }
+
+    screenSetColor(GREEN, BLACK);
+
+    char ch;
+    while ((ch = fgetc(file)) != EOF) {
+        putchar(ch);  
+    }
+
+    fclose(file);  
 }
 
-void showDefeat() {
-    screenClear();
+void showGameOver() {
+    screenClear();  // Limpa a tela antes de mostrar a tela de game over
+    FILE *file = fopen("menu/gameover.txt", "r");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo gameover.txt\n");
+        return;
+    }
+
+    // Define a cor para a tela de Game Over (você pode mudar conforme necessário)
     screenSetColor(RED, BLACK);
-    printf("\n");
-    printf("╔════════════════════════════════════╗\n");
-    printf("║      ════════════════════════      ║\n");
-    printf("║  🪦 ║ QUE PENA, VOCÊ MORREU ║ 🪦   ║\n");
-    printf("║      ════════════════════════      ║\n");
-    printf("║ OS ZUMBIS CONSEGUIRAM TE ENCONTRAR ║\n");
-    printf("║         PARA TENTAR NOVAMENTE      ║\n");
-    printf("║        PRESSIONE A TECLA  'R'      ║\n");
-    printf("║             PARA SAIR              ║\n");
-    printf("║        PRESSIONE A TECLA  'Q'      ║\n");
-    printf("╚════════════════════════════════════╝\n");
+
+    char ch;
+    while ((ch = fgetc(file)) != EOF) {
+        putchar(ch);  // Imprime cada caractere do arquivo
+    }
+
+    fclose(file);  // Fecha o arquivo após terminar de ler
+
+    screenSetColor(WHITE, BLACK);
+    printf("\n\n\t\t\t\t   Não foi dessa vez, jogador!\n");
+    printf("\t\t\t   Insira r para reiniciar o jogo ou q para sair.\n");
+
 }
 
 int main() {
     screenInit(0);
     keyboardInit();
     timerInit(75);
+    srand(time(NULL)); 
 
     while (1) {
+        int option = 0; 
 
-        int option = 0, drawMenu = 0;
+        showStartArt(); 
+
         while (1) {
-            if (!drawMenu) {
-                menu();
-                drawMenu = 1;
-            }
-
             if (keyhit()) {
                 int key = readch();
                 if (key == '1') {
                     system("clear");
-                    break; 
+                    break;  // Inicia o jogo
                 } else if (key == '2') {
                     showInstructions();
-                    system("clear");
-                    drawMenu = 0; 
+                    system("clear"); // Mostra as instruções
                 } else if (key == '3') {
                     system("clear");
-                    return 0; 
+                    return 0; // Sai do jogo
                 }
             }
         }
@@ -427,20 +445,42 @@ int main() {
         time(&startTime);
         int elapsedTime = 0;
         int frameCount = 0;
+        static int lastSpawnFrame = 0;
+
 
         struct Clint clint;
         initClint(&clint);
 
         bullets = malloc(MAX_BULLETS * sizeof(struct Bullet));
         zombies = malloc(zombieCapacity * sizeof(struct Zombie));
-        if (!bullets || !zombies) return -1;
+        if (!bullets || !zombies) {
+            return 1; 
+        }
+
+        for (int i = 0; i < zombieCapacity; i++) {
+            zombies[i].onScreen = 0; 
+        }
 
         while (1) { 
+            time(&currentTime);
+            elapsedTime = difftime(currentTime, startTime);
             if (timerTimeOver()) {
                 frameCount++;
-                time(&currentTime);
-                elapsedTime = difftime(currentTime, startTime);
+                int remainingTime = GAME_DURATION / 75 - elapsedTime;
+                char timeString[5]; 
 
+
+                if (remainingTime < 0) { 
+                    snprintf(timeString, sizeof(timeString), "ERR"); 
+                } else if (remainingTime < 10) {
+                    snprintf(timeString, sizeof(timeString), "0%d", remainingTime);
+                } else if (remainingTime >= 10000) { 
+                    snprintf(timeString, sizeof(timeString), "ERR"); 
+                } else {
+                    snprintf(timeString, sizeof(timeString), "%d", remainingTime);
+                }
+
+                
                 screenDrawMap();
                 drawClint(clint.coords.x, clint.coords.y);
                 spawnZombie(&clint, frameCount, elapsedTime);
@@ -453,85 +493,70 @@ int main() {
                     reloadTime--;
                 }
 
-                numZombies = 0;
-                for (int i = 0; i < zombieCapacity; i++) {
-                    if (zombies[i].onScreen) {
-                        numZombies++;
-                    }
-                }
-
                 screenGotoxy(MAP_WIDTH / 2 - 3, MAP_HEIGHT); printf("💀: %d", score);
                 screenGotoxy(0, MAP_HEIGHT); printf("🔫: %d", clint.ammo);
-                screenGotoxy(MAP_WIDTH / 2 , MAP_HEIGHT -1); printf("Tempo: %d", GAME_DURATION/75 - elapsedTime);
-
+                screenGotoxy(MAP_WIDTH + 10 , 1); printf("Tempo: %s", timeString);
                 screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT); printf("                             ");
                 screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT);
                 for (int i = 0; i < clint.health; i++) printf("❤️");
 
-
-
-                if (clint.health <= 0) {
-                    showDefeat();
-                    fflush(stdout);
+                if (elapsedTime >= GAME_DURATION / 75 && score >= 8) {
+                    showVictory();
                     while (1) {
                         if (keyhit()) {
                             int key = readch();
                             if (key == 'r') {
+                                clint.health = 10;
+                                clint.ammo = 8;
+                                clint.coords.x = MAP_WIDTH / 2;
+                                clint.coords.y = MAP_HEIGHT /2;
+                                score = 0;
+                                numZombies = 0;
+                                memset(bullets, 0, MAX_BULLETS * sizeof(struct Bullet));
+                                memset(zombies, 0, zombieCapacity * sizeof(struct Zombie)); // Reset zombies array
                                 system("clear");
-                                break; 
+                                time(&startTime); // Reset the timer
+                                lastSpawnFrame = 0; // Reset the last spawn frame
+                                frameCount = 0; // Reset frame count
+                                break;
                             } else if (key == 'q') {
                                 free(bullets);
                                 free(zombies);
-                                return 0; 
+                                return 0;
                             }
                         }
-                    }
-                    break; 
-
-                } else if (elapsedTime >= GAME_DURATION / 75) {
-                    int zombiesRemaining = 0;
-                    for (int i = 0; i < zombieCapacity; i++) {
-                        if (zombies[i].onScreen) {
-                            zombiesRemaining++;
-                        }
-                    }
-
-                    if (zombiesRemaining == 0) {
-                        showVictory();
-                        while(1){
-                            if (keyhit()) {
-                                int key = readch();
-                                if (key == 'r') {
-                                    system("clear");
-                                    break;
-                                } else if (key == 'q') {
-                                    free(bullets); free(zombies);
-                                    return 0;
-                                }
-                            }
-                        }
-
-
-                    } else {
-                         showDefeat();
-                         while (1) {
-                            if (keyhit()) {
-                                int key = readch();
-                                if (key == 'r') {
-                                    break; 
-                                }
-                                if (key == 'q') {
-                                    free(bullets); free(zombies);
-                                    return 0;
-                                }
-
-                            }
-                         }
                     }
                     break;
                 }
 
-
+                if (clint.health <= 0) {
+                    showGameOver();
+                    while (1) {
+                        if (keyhit()) {
+                            int key = readch();
+                            if (key == 'r') {
+                                clint.health = 10;
+                                clint.ammo = 8;
+                                clint.coords.x = MAP_WIDTH / 2;
+                                clint.coords.y = MAP_HEIGHT /2;
+                                score = 0;
+                                numZombies = 0;
+                                memset(bullets, 0, MAX_BULLETS * sizeof(struct Bullet));
+                                memset(zombies, 0, zombieCapacity * sizeof(struct Zombie)); 
+                                system("clear");
+                                time(&startTime); 
+                                lastSpawnFrame = 0; 
+                                frameCount = 0; 
+                                break;
+                            } else if (key == 'q') {
+                                free(bullets);
+                                free(zombies);
+                                return 0;
+                            }
+                        }
+                    }
+                    break;
+                }
 
                 for (int i = 0; i < MAX_BULLETS; i++) {
                     if (bullets[i].onScreen) {
@@ -543,8 +568,6 @@ int main() {
                 }
                 screenUpdate();
             }
-
-
 
             if (keyhit()) {
                 int key = readch(), newX = clint.coords.x, newY = clint.coords.y;
@@ -562,20 +585,18 @@ int main() {
                             break;
                         }
 
-
-                if (!isWall(newX, newY)  && newX >= 0 && newX < MAP_WIDTH && newY >= 0 && newY < MAP_HEIGHT) {
+                if (!isWall(newX, newY) && newX >= 0 && newX < MAP_WIDTH && newY >= 0 && newY < MAP_HEIGHT) {
                     clint.coords.x = newX;
                     clint.coords.y = newY;
                 }
             }
-
         } 
 
         free(bullets);
         free(zombies);
         bullets = NULL;
         zombies = NULL;
-    } 
+    }
 
-    return 0; 
+    return 0;
 }
