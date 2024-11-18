@@ -495,7 +495,7 @@ int main() {
 
                 screenGotoxy(MAP_WIDTH / 2 - 3, MAP_HEIGHT); printf("💀: %d", score);
                 screenGotoxy(0, MAP_HEIGHT); printf("🔫: %d", clint.ammo);
-                screenGotoxy(MAP_WIDTH + 10 , 1); printf("Tempo: %s", timeString);
+                screenGotoxy(MAP_WIDTH + 1 , 1); printf("⌛: %s", timeString);
                 screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT); printf("                             ");
                 screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT);
                 for (int i = 0; i < clint.health; i++) printf("❤️");
@@ -527,6 +527,32 @@ int main() {
                         }
                     }
                     break;
+                } else if (elapsedTime >= GAME_DURATION / 75 && !(score >= 8)) {
+                    showGameOver();
+                    while (1) {
+                        if (keyhit()) {
+                            int key = readch();
+                            if (key == 'r') {
+                                clint.health = 10;
+                                clint.ammo = 8;
+                                clint.coords.x = MAP_WIDTH / 2;
+                                clint.coords.y = MAP_HEIGHT /2;
+                                score = 0;
+                                numZombies = 0;
+                                memset(bullets, 0, MAX_BULLETS * sizeof(struct Bullet));
+                                memset(zombies, 0, zombieCapacity * sizeof(struct Zombie)); 
+                                system("clear");
+                                time(&startTime); 
+                                lastSpawnFrame = 0; 
+                                frameCount = 0; 
+                                break;
+                            } else if (key == 'q') {
+                                free(bullets);
+                                free(zombies);
+                                return 0;
+                            }
+                        }
+                    }
                 }
 
                 if (clint.health <= 0) {
