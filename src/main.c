@@ -255,7 +255,6 @@ int main()
                                 scanf("%s", playerName);
                                 leaderboard = addNode(leaderboard, playerName, score);
                                 saveLeaderboard(leaderboard);
-                                showLeaderboard();
 
                                 clint.health = 10;
                                 clint.ammo = 8;
@@ -315,7 +314,8 @@ int main()
                                 break;
                             }
                             else if (key == 'q')
-                            {
+                            {   
+                                showLeaderboard();
                                 free(bullets);
                                 free(zombies);
                                 return 0;
@@ -418,7 +418,7 @@ void screenDrawMap()
         {MAP_WIDTH - 2, MAP_HEIGHT / 2}  // Entrada 4: Direita
     };
 
-    int numEntrances = sizeof(mapEntrances) / sizeof(mapEntrances[0]);
+    int numEntrances = 4;
 
     // Posição aleatória em uma das entradas
     struct Position getRandomEntrance()
@@ -537,11 +537,11 @@ void updateZombie(struct Zombie *zombie, struct Clint *clint)
         // Mov. zumbi ao Clint
         if (abs(dx) > abs(dy))
         {
-            zombie->coords.x += (dx > 0) ? 1 : -1;
+            zombie->coords.x += (dx > 0) - (dx < 0);
         }
         else
         {
-            zombie->coords.y += (dy > 0) ? 1 : -1;
+            zombie->coords.y += (dy > 0) - (dy < 0);
         }
 
         // Verifica colisão com a parede *DEPOIS* de mover o zumbi
@@ -550,11 +550,11 @@ void updateZombie(struct Zombie *zombie, struct Clint *clint)
             // Colisão com parede -> desfaz movimento
             if (abs(dx) > abs(dy))
             {
-                zombie->coords.x -= (dx > 0) ? 1 : -1;
+                zombie->coords.x -= (dx > 0) - (dx < 0);
             }
             else
             {
-                zombie->coords.y -= (dy > 0) ? 1 : -1;
+                zombie->coords.y += (dy > 0) - (dy < 0);
             }
         }
     }
@@ -789,27 +789,24 @@ void showGameOver()
 
 // Lista Encadeada para o Leaderboard
 
-struct Node* addNode(struct Node *head, char *name, int score) {
+void addNode(struct Node **head, char *name, int score) {
     struct Node *newNode = (struct Node*)malloc(sizeof(struct Node));
-    if (!newNode) {
-        return head; 
-    }
     newNode->name = strdup(name); 
     newNode->score = score;
     newNode->next = NULL;
 
-    if (!head || score > head->score) {
-        newNode->next = head;
-        return newNode;
+    if (*head == NULL || score > (*head)->score) {
+        newNode->next = *head;
+        *head = newNode;
+        return;
     }
 
-    struct Node *current = head;
-    while (current->next && score <= current->next->score) {
+    struct Node *current = *head;
+    while (current->next != NULL && score <= current->next->score) {
         current = current->next;
     }
     newNode->next = current->next;
     current->next = newNode;
-    return head;
 }
 
 
