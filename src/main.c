@@ -45,7 +45,6 @@ struct Zombie
 {
     struct Position coords;
     int health;
-    int stepCounter;
     int onScreen;
 };
 
@@ -519,16 +518,7 @@ int isWall(int x, int y)
 
 // Função Geral do Zumbi (movimentação e colisão)
 
-void updateZombie(struct Zombie *zombie, struct Clint *clint)
-{
-    zombie->stepCounter++;
-
-    int movementInterval = 3; 
-
-    // Zumbi se move apenas se o contador de movimento atingir o intervalo
-    if (zombie->stepCounter >= movementInterval)
-    {
-        zombie->stepCounter = 0;
+void updateZombie(struct Zombie *zombie, struct Clint *clint) {
 
         // Calcula a diferença entre as coordenadas do zumbi e do Clint
         int dx = clint->coords.x - zombie->coords.x;
@@ -557,7 +547,6 @@ void updateZombie(struct Zombie *zombie, struct Clint *clint)
                 zombie->coords.y += (dy > 0) - (dy < 0);
             }
         }
-    }
 }
 
 
@@ -715,7 +704,7 @@ void showInstructions()
         return;
     }
 
-    screenSetColor(BLUE, BLACK);
+    screenSetColor(LIGHTBLUE, BLACK);
 
     char ch;
     while ((ch = fgetc(file)) != EOF)
