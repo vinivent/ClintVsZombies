@@ -20,7 +20,7 @@
 #define COLOR_BULLET YELLOW
 #define MAX_BULLETS 8
 #define ZOMBIE_SPAWN_INTERVAL 30
-#define GAME_DURATION 25 * 75
+#define GAME_DURATION 60 * 75
 
 
 // Structs
@@ -67,7 +67,7 @@ struct Node{
 
 struct Bullet *bullets;
 struct Zombie *zombies;
-int zombieCapacity = 10;
+int zombieCapacity = 15;
 int lastSpawnFrame = 0;
 int numZombies = 0;
 int reloadTime = 0;
@@ -518,7 +518,7 @@ int isWall(int x, int y)
 
 // Função Geral do Zumbi (movimentação e colisão)
 int zombieMoveTimer = 0;
-int zombieMoveSpeed = 75 / 25; 
+int zombieMoveSpeed = 75 / 15; 
 
 void updateZombie(struct Zombie *zombie, struct Clint *clint) {
     zombieMoveTimer++;
