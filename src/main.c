@@ -1,12 +1,12 @@
 // Include
 
+#include "screen.h"
+#include "keyboard.h"
+#include "timer.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "screen.h"
-#include "keyboard.h"
-#include "timer.h"
 #include <time.h>
 #include <math.h>
 
@@ -66,11 +66,11 @@ struct Node{
 
 // Variáveis Globais
 
-int lastSpawnFrame = 0;
-struct Zombie *zombies;
-int numZombies = 0;
-int zombieCapacity = 10;
 struct Bullet *bullets;
+struct Zombie *zombies;
+int zombieCapacity = 10;
+int lastSpawnFrame = 0;
+int numZombies = 0;
 int reloadTime = 0;
 int score = 0;
 
@@ -100,7 +100,7 @@ void drawZombie(int x, int y);
 void updateZombie(struct Zombie *zombie, struct Clint *clint);
 void spawnZombie(struct Clint *clint, int frameCount, double elapsedTime);
 
-struct Node* addNode(struct Node *head, char *name, int score);
+void addNode(struct Node **head, char *name, int score);
 void saveLeaderboard(struct Node *head);
 struct Node* loadLeaderboard(void); 
 void showLeaderboard(void); 
@@ -253,7 +253,7 @@ int main()
                                 char playerName[100];
                                 printf("Insira seu nome: ");
                                 scanf("%s", playerName);
-                                leaderboard = addNode(leaderboard, playerName, score);
+                                addNode(&leaderboard, playerName, score);
                                 saveLeaderboard(leaderboard);
 
                                 clint.health = 10;
@@ -275,7 +275,7 @@ int main()
                                 char playerName[100];
                                 printf("Insira seu nome: ");
                                 scanf("%s", playerName);
-                                leaderboard = addNode(leaderboard, playerName, score);
+                                addNode(&leaderboard, playerName, score);
                                 saveLeaderboard(leaderboard);
                                 showLeaderboard();
                                 
@@ -623,17 +623,14 @@ void spawnZombie(struct Clint *clint, int frameCount, double elapsedTime)
             {
                 initZombie(&zombies[i]);
                 zombies[i].onScreen = 1;
-                zombies[i].health = 1;       
                 lastSpawnFrame = frameCount;
                 break;
             }
         }
     }
 
-    for (int i = 0; i < zombieCapacity; i++)
-    {
-        if (zombies[i].onScreen && zombies[i].health > 0)
-        {
+    for (int i = 0; i < zombieCapacity; i++) {
+        if (zombies[i].onScreen && zombies[i].health > 0) {
             updateZombie(&zombies[i], clint);
             drawZombie(zombies[i].coords.x, zombies[i].coords.y);
 
@@ -824,22 +821,13 @@ void saveLeaderboard(struct Node *head) {
 
 struct Node* loadLeaderboard() {
     FILE *file = fopen("leaderboard/leaderboard.txt", "r");
-    if (!file) {
-        fclose(file);
-        file = fopen("leaderboard/leaderboard.txt", "w");
-        if (!file) {
-             perror("Erro ao criar o arquivo leaderboard.txt");
-             return NULL;
-        }
-        fclose(file);
-        return NULL; 
-     }
+
     struct Node *head = NULL;
     char name[100];
     int score;
 
     while (fscanf(file, "%s %d", name, &score) == 2) {
-        head = addNode(head, name, score);
+        addNode(&head, name, score);
     }
 
     fclose(file);
