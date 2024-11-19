@@ -1,18 +1,18 @@
-# Clint vs Zombies
+#  <h1 align="center"> Clint vs Zombies 🤠 </h1>
 
-Um jogo de sobrevivência onde Clint, o caubói solitário, precisa enfrentar hordas de zumbis enquanto aguarda o resgate do seu fiel companheiro, Pé de Pano.
+Um jogo de sobrevivência onde Clint, o caubói solitário, precisa enfrentar hordas de zumbis enquanto aguarda o resgate do seu fiel companheiro, Pé de Pano, em um tempo de 35 segundos.
 
-## Visão Geral
+## 🌵 Visão Geral
 
 Clint está cercado! Zumbis famintos se aproximam de todos os lados, e a única esperança de Clint é resistir o máximo que puder até Pé de Pano chegar com a cavalaria.  Atire nos zumbis, movimente-se estrategicamente e sobreviva o máximo que conseguir!
 
-## Instruções do Jogo
+## 🎮 Instruções do Jogo
 
 * **Movimento:** Use as teclas **W** (cima), **A** (esquerda), **S** (baixo) e **D** (direita) para mover Clint (🤠) pelo mapa.
 * **Atirar:** Pressione a tecla **F** para atirar nos zumbis (🧟).
 * **Objetivo:** Sobreviva o máximo de tempo possível, eliminando o maior número de zumbis que conseguir.
 
-## Executando o Jogo
+## 🧩 Executando o Jogo
 
 Para executar o jogo, você precisa ter o WSL (Windows Subsystem for Linux) instalado em seu computador. Siga os passos abaixo:
 
@@ -62,12 +62,14 @@ Para executar este projeto no WSL (Windows Subsystem for Linux), siga os passos 
 * Adapte o nome do arquivo executável (`ClintVsZombies.out`) se necessário, de acordo com o nome definido no seu projeto.
 
 
-## Capturas de Tela
+## 🐎 Capturas de Tela
 
-![Screenshot 1](caminho/para/screenshot1.png)
-![Screenshot 2](caminho/para/screenshot2.png)
+![menuimage](https://github.com/user-attachments/assets/bdad93ed-16df-48f6-a9bf-44dab61fdf05)
+<br>
+<br>
+![instructionimage](https://github.com/user-attachments/assets/82112908-7eac-48b7-b668-4577a35066bf)
 
-## Contribuidores
+## 👤 Contribuidores
 <table>
   <tr>
     <td align="center">
@@ -95,6 +97,3 @@ Para executar este projeto no WSL (Windows Subsystem for Linux), siga os passos 
       </a>
     </td>
 </table>
-
-
-
