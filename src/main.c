@@ -1,12 +1,12 @@
 // Include
 
-#include "screen.h"
-#include "keyboard.h"
-#include "timer.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "screen.h"
+#include "keyboard.h"
+#include "timer.h"
 #include <time.h>
 #include <math.h>
 
@@ -45,6 +45,7 @@ struct Zombie
 {
     struct Position coords;
     int health;
+    int stepCounter;
     int onScreen;
 };
 
@@ -65,11 +66,11 @@ struct Node{
 
 // Variáveis Globais
 
-struct Bullet *bullets;
-struct Zombie *zombies;
-int zombieCapacity = 10;
 int lastSpawnFrame = 0;
+struct Zombie *zombies;
 int numZombies = 0;
+int zombieCapacity = 10;
+struct Bullet *bullets;
 int reloadTime = 0;
 int score = 0;
 
@@ -81,25 +82,26 @@ struct Position getRandomEntrance();
 int isWall(int x, int y);
 int checkCollision(int x1, int y1, int x2, int y2);
 
-void drawBullet(int x, int y);
-void initBullet(struct Bullet *bullet, struct Clint *clint);
-void updateBullet(struct Bullet *bullet);
-
 void initClint(struct Clint *clint);
 void drawClint(int x, int y);
 void checkClintDamage(struct Clint *clint);
-
-void showStartArt();
-void showInstructions();
-void showVictory();
-void showGameOver();
 
 void initZombie(struct Zombie *zombie);
 void drawZombie(int x, int y);
 void updateZombie(struct Zombie *zombie, struct Clint *clint);
 void spawnZombie(struct Clint *clint, int frameCount, double elapsedTime);
 
-void addNode(struct Node **head, char *name, int score);
+void drawBullet(int x, int y);
+void initBullet(struct Bullet *bullet, struct Clint *clint);
+void updateBullet(struct Bullet *bullet);
+
+void showStartArt();
+void showInstructions();
+void showVictory();
+void showGameOver();
+
+
+struct Node* addNode(struct Node *head, char *name, int score);
 void saveLeaderboard(struct Node *head);
 struct Node* loadLeaderboard(void); 
 void showLeaderboard(void); 
@@ -250,10 +252,11 @@ int main()
                             if (key == 'r')
                             {
                                 char playerName[100];
-                                printf("Insira seu nome: ");
+                                printf("\nInsira seu nome: ");
                                 scanf("%s", playerName);
-                                addNode(&leaderboard, playerName, score);
+                                leaderboard = addNode(leaderboard, playerName, score);
                                 saveLeaderboard(leaderboard);
+                                showLeaderboard();
 
                                 clint.health = 10;
                                 clint.ammo = 8;
@@ -274,7 +277,7 @@ int main()
                                 char playerName[100];
                                 printf("Insira seu nome: ");
                                 scanf("%s", playerName);
-                                addNode(&leaderboard, playerName, score);
+                                leaderboard = addNode(leaderboard, playerName, score);
                                 saveLeaderboard(leaderboard);
                                 showLeaderboard();
                                 
@@ -313,8 +316,7 @@ int main()
                                 break;
                             }
                             else if (key == 'q')
-                            {   
-                                showLeaderboard();
+                            {
                                 free(bullets);
                                 free(zombies);
                                 return 0;
@@ -379,10 +381,9 @@ int main()
 
 //////////////////// Funções do Jogo ////////////////////
 
-
+// ========================= FUNÇÕES DE MAPA =========================
 
 // Função que desenha o mapa
-
 void screenDrawMap()
 {
     for (int y = 0; y < MAP_HEIGHT; y++)
@@ -409,48 +410,37 @@ void screenDrawMap()
     fflush(stdout);
 }
 
-    // Entradas do mapa 
-    struct Position mapEntrances[] = {
-        {MAP_WIDTH / 2, 2},              // Entrada 1: Topo
-        {2, MAP_HEIGHT / 2},             // Entrada 2: Esquerda
-        {MAP_WIDTH / 2, MAP_HEIGHT - 1}, // Entrada 3: Baixo
-        {MAP_WIDTH - 2, MAP_HEIGHT / 2}  // Entrada 4: Direita
-    };
+// Entradas do mapa
+struct Position mapEntrances[] = {
+    {MAP_WIDTH / 2, 2},              // Entrada 1: Topo
+    {2, MAP_HEIGHT / 2},             // Entrada 2: Esquerda
+    {MAP_WIDTH / 2, MAP_HEIGHT - 1}, // Entrada 3: Baixo
+    {MAP_WIDTH - 2, MAP_HEIGHT / 2}  // Entrada 4: Direita
+};
 
-    int numEntrances = 4;
+int numEntrances = sizeof(mapEntrances) / sizeof(mapEntrances[0]);
 
-    // Posição aleatória em uma das entradas
-    struct Position getRandomEntrance()
-    {
-        int randomIndex = rand() % numEntrances;
-        return mapEntrances[randomIndex];
-}
-
-
-
-// Função que desenha o zumbi
-
-void drawZombie(int x, int y)
+// Posição aleatória em uma das entradas
+struct Position getRandomEntrance()
 {
-    screenGotoxy(x, y);
-    printf("🧟");
+    int randomIndex = rand() % numEntrances;
+    return mapEntrances[randomIndex];
 }
 
-void initZombie(struct Zombie *zombie)
+// Função que verifica se uma posição é uma parede
+int isWall(int x, int y)
 {
-    struct Position entrance = getRandomEntrance();
-    zombie->coords = entrance;
-    zombie->health = 1; // Vida inicial do zumbi
+    return (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT || map[y][x] == '#');
 }
 
-
-void drawClint(int x, int y)
+// Função que checa colisão
+int checkCollision(int x1, int y1, int x2, int y2)
 {
-    screenGotoxy(x, y);
-    printf("🤠");
+    return x1 == x2 && y1 == y2;
 }
 
 
+// ========================= FUNÇÕES DO CLINT =========================
 
 // Função para posicionar Clint no centro do mapa
 void initClint(struct Clint *clint)
@@ -462,25 +452,142 @@ void initClint(struct Clint *clint)
     clint->ammo = MAX_BULLETS;
 }
 
-void drawBullet(int x, int y)
+// Função que desenha o Clint
+void drawClint(int x, int y)
 {
-    screenSetColor(COLOR_BULLET, BLACK);
     screenGotoxy(x, y);
-    printf("•");
+    printf("🤠");
+}
+
+// Função colisão Clint + Zumbi
+void checkClintDamage(struct Clint *clint)
+{
+    for (int i = 0; i < zombieCapacity; i++)
+    {
+        if (zombies[i].onScreen &&
+            checkCollision(clint->coords.x, clint->coords.y, zombies[i].coords.x, zombies[i].coords.y))
+        {
+            clint->health--;
+            break;
+        }
+    }
 }
 
 
+// ========================= FUNÇÕES DO ZUMBI =========================
+
+// Função que inicia o zumbi
+void initZombie(struct Zombie *zombie)
+{
+    struct Position entrance = getRandomEntrance();
+    zombie->coords = entrance;
+    zombie->health = 1; // Vida inicial do zumbi
+}
+
+// Função que desenha o zumbi
+void drawZombie(int x, int y)
+{
+    screenGotoxy(x, y);
+    printf("🧟");
+}
+
+// Função Geral do Zumbi (movimentação e colisão)
+void updateZombie(struct Zombie *zombie, struct Clint *clint)
+{
+    zombie->stepCounter++;
+
+    int movementInterval = 3;
+
+    // Zumbi se move apenas se o contador de movimento atingir o intervalo
+    if (zombie->stepCounter >= movementInterval)
+    {
+        zombie->stepCounter = 0;
+
+        // Calcula a diferença entre as coordenadas do zumbi e do Clint
+        int dx = clint->coords.x - zombie->coords.x;
+        int dy = clint->coords.y - zombie->coords.y;
+
+        // Mov. zumbi ao Clint
+        if (abs(dx) > abs(dy))
+        {
+            zombie->coords.x += (dx > 0) ? 1 : -1;
+        }
+        else
+        {
+            zombie->coords.y += (dy > 0) ? 1 : -1;
+        }
+
+        // Verifica colisão com a parede *DEPOIS* de mover o zumbi
+        if (isWall(zombie->coords.x, zombie->coords.y))
+        {
+            // Colisão com parede -> desfaz movimento
+            if (abs(dx) > abs(dy))
+            {
+                zombie->coords.x -= (dx > 0) ? 1 : -1;
+            }
+            else
+            {
+                zombie->coords.y -= (dy > 0) ? 1 : -1;
+            }
+        }
+    }
+}
+
+// Função que gera os zumbis
+void spawnZombie(struct Clint *clint, int frameCount, double elapsedTime)
+{
+    if (elapsedTime < GAME_DURATION / 75 && frameCount - lastSpawnFrame >= ZOMBIE_SPAWN_INTERVAL)
+    {
+        for (int i = 0; i < zombieCapacity; i++)
+        {
+            if (!zombies[i].onScreen)
+            {
+                initZombie(&zombies[i]);
+                zombies[i].onScreen = 1;
+                zombies[i].health = 1;
+                lastSpawnFrame = frameCount;
+                break;
+            }
+        }
+    }
+
+    for (int i = 0; i < zombieCapacity; i++)
+    {
+        if (zombies[i].onScreen && zombies[i].health > 0)
+        {
+            updateZombie(&zombies[i], clint);
+            drawZombie(zombies[i].coords.x, zombies[i].coords.y);
+
+            // Colisão zumbi + bala
+            for (int j = 0; j < MAX_BULLETS; j++)
+            {
+                if (bullets[j].onScreen && checkCollision(bullets[j].coords.x, bullets[j].coords.y, zombies[i].coords.x, zombies[i].coords.y))
+                {
+                    bullets[j].onScreen = 0;
+                    zombies[i].health--;
+                    if (zombies[i].health <= 0)
+                    {
+                        zombies[i].onScreen = 0;
+                    }
+                    score++;
+                }
+            }
+        }
+    }
+}
+
+
+// ========================= FUNÇÕES DA BALA =========================
 
 // Função para iniciar a bala
-
 void initBullet(struct Bullet *bullet, struct Clint *clint)
 {
     if (clint->direction == 0)
     {
-        bullet->direction = clint->direction; // bala criada com a direção que o Clint olha
+        bullet->direction = clint->direction;
         bullet->coords.x = clint->coords.x;
         bullet->coords.y = clint->coords.y - 1; // bala criada um espaço na frente do Clint
-        bullet->onScreen = 1;                   // bala na tela ao atirar
+        bullet->onScreen = 1;
     }
     if (clint->direction == 1)
     {
@@ -505,61 +612,22 @@ void initBullet(struct Bullet *bullet, struct Clint *clint)
     }
 }
 
-
-
-// Função que verifica se uma posição é uma parede
-
-int isWall(int x, int y)
+// Função que desenha a bala
+void drawBullet(int x, int y)
 {
-    return (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT || map[y][x] == '#');
+    screenSetColor(COLOR_BULLET, BLACK);
+    screenGotoxy(x, y);
+    printf("•");
 }
-
-
-
-// Função Geral do Zumbi (movimentação e colisão)
-
-void updateZombie(struct Zombie *zombie, struct Clint *clint) {
-
-        // Calcula a diferença entre as coordenadas do zumbi e do Clint
-        int dx = clint->coords.x - zombie->coords.x;
-        int dy = clint->coords.y - zombie->coords.y;
-
-        // Mov. zumbi ao Clint
-        if (abs(dx) > abs(dy))
-        {
-            zombie->coords.x += (dx > 0) - (dx < 0);
-        }
-        else
-        {
-            zombie->coords.y += (dy > 0) - (dy < 0);
-        }
-
-        // Verifica colisão com a parede *DEPOIS* de mover o zumbi
-        if (isWall(zombie->coords.x, zombie->coords.y))
-        {
-            // Colisão com parede -> desfaz movimento
-            if (abs(dx) > abs(dy))
-            {
-                zombie->coords.x -= (dx > 0) - (dx < 0);
-            }
-            else
-            {
-                zombie->coords.y += (dy > 0) - (dy < 0);
-            }
-        }
-}
-
-
 
 // Função que atualiza a bala
-
 void updateBullet(struct Bullet *bullet)
 {
     // Coordenadas da bala antes dela se movimentar
     int nextX = bullet->coords.x;
     int nextY = bullet->coords.y;
 
-    // Direção da bala 
+    // Direção da bala
     if (bullet->direction == 0)
     { // Cima
         nextY--;
@@ -580,8 +648,8 @@ void updateBullet(struct Bullet *bullet)
     // Posição fora dos limites ou colidindo com parede
     if (isWall(nextX, nextY) || nextX < 0 || nextX >= MAP_WIDTH || nextY < 0 || nextY >= MAP_HEIGHT)
     {
-        bullet->onScreen = 0; 
-        return;              
+        bullet->onScreen = 0;
+        return;
     }
 
     bullet->coords.x = nextX;
@@ -589,80 +657,9 @@ void updateBullet(struct Bullet *bullet)
 }
 
 
-
-// Função que checa colisão
-
-int checkCollision(int x1, int y1, int x2, int y2)
-{
-    return x1 == x2 && y1 == y2;
-}
-
-
-
-// Função que gera os zumbis
-
-void spawnZombie(struct Clint *clint, int frameCount, double elapsedTime)
-{
-
-    if (elapsedTime < GAME_DURATION / 75 && frameCount - lastSpawnFrame >= ZOMBIE_SPAWN_INTERVAL)
-    {
-        for (int i = 0; i < zombieCapacity; i++)
-        {
-            if (!zombies[i].onScreen)
-            {
-                initZombie(&zombies[i]);
-                zombies[i].onScreen = 1;
-                lastSpawnFrame = frameCount;
-                break;
-            }
-        }
-    }
-
-    for (int i = 0; i < zombieCapacity; i++) {
-        if (zombies[i].onScreen && zombies[i].health > 0) {
-            updateZombie(&zombies[i], clint);
-            drawZombie(zombies[i].coords.x, zombies[i].coords.y);
-
-            // Colisão zumbi + bala
-            for (int j = 0; j < MAX_BULLETS; j++)
-            {
-                if (bullets[j].onScreen && checkCollision(bullets[j].coords.x, bullets[j].coords.y, zombies[i].coords.x, zombies[i].coords.y))
-                {
-                    bullets[j].onScreen = 0; 
-                    zombies[i].health--;     
-                    if (zombies[i].health <= 0)
-                    {
-                        zombies[i].onScreen = 0;
-                    }
-                    score++; 
-                }
-            }
-        }
-    }
-}
-
-
-
-
-// Função colisão Clint + Zumbi
-
-void checkClintDamage(struct Clint *clint)
-{
-    for (int i = 0; i < zombieCapacity; i++)
-    {
-        if (zombies[i].onScreen &&
-            checkCollision(clint->coords.x, clint->coords.y, zombies[i].coords.x, zombies[i].coords.y))
-        {
-            clint->health--;
-            break;
-        }
-    }
-}
-
-
+// ========================= FUNÇÕES DE TELA =========================
 
 // Tela Inicial
-
 void showStartArt()
 {
     screenClear();
@@ -691,9 +688,7 @@ void showStartArt()
     printf("\t\t\t\t3. Sair\n");
 }
 
-
 // Tela de Instruções
-
 void showInstructions()
 {
     screenClear();
@@ -715,10 +710,7 @@ void showInstructions()
     fclose(file);
 }
 
-
-
 // Tela de Vitória
-
 void showVictory()
 {
     screenClear();
@@ -740,10 +732,7 @@ void showVictory()
     fclose(file);
 }
 
-
-
 // Tela de Derrota
-
 void showGameOver()
 {
     screenClear();
@@ -759,7 +748,7 @@ void showGameOver()
     char ch;
     while ((ch = fgetc(file)) != EOF)
     {
-        putchar(ch); 
+        putchar(ch);
     }
 
     fclose(file);
@@ -768,39 +757,45 @@ void showGameOver()
     printf("\n\n\t\t\t\t   Não foi dessa vez!\n");
     printf("\t\t\t\t   Pontuação Final: %d\n", score);
     printf("\t\t\tInsira r para reiniciar o jogo ou q para sair.\n");
-
 }
 
-
+// ========================= FUNÇÕES DO LEADERBOARD =========================
 
 // Lista Encadeada para o Leaderboard
-
-void addNode(struct Node **head, char *name, int score) {
+struct Node* addNode(struct Node *head, char *name, int score)
+{
     struct Node *newNode = (struct Node*)malloc(sizeof(struct Node));
-    newNode->name = strdup(name); 
+    if (!newNode)
+    {
+        return head;
+    }
+    newNode->name = strdup(name);
     newNode->score = score;
     newNode->next = NULL;
 
-    if (*head == NULL || score > (*head)->score) {
-        newNode->next = *head;
-        *head = newNode;
-        return;
+    if (!head || score > head->score)
+    {
+        newNode->next = head;
+        return newNode;
     }
 
-    struct Node *current = *head;
-    while (current->next != NULL && score <= current->next->score) {
+    struct Node *current = head;
+    while (current->next && score <= current->next->score)
+    {
         current = current->next;
     }
     newNode->next = current->next;
     current->next = newNode;
+    return head;
 }
 
-
-void saveLeaderboard(struct Node *head) {
+void saveLeaderboard(struct Node *head)
+{
     FILE *file = fopen("leaderboard/leaderboard.txt", "w");
-  
+
     struct Node *current = head;
-    while (current != NULL) {
+    while (current != NULL)
+    {
         fprintf(file, "%s %d\n", current->name, current->score);
         current = current->next;
     }
@@ -808,51 +803,69 @@ void saveLeaderboard(struct Node *head) {
     fclose(file);
 }
 
-struct Node* loadLeaderboard() {
+struct Node* loadLeaderboard()
+{
     FILE *file = fopen("leaderboard/leaderboard.txt", "r");
-
+    if (!file)
+    {
+        fclose(file);
+        file = fopen("leaderboard/leaderboard.txt", "w");
+        if (!file)
+        {
+            perror("Erro ao criar o arquivo leaderboard.txt");
+            return NULL;
+        }
+        fclose(file);
+        return NULL;
+    }
     struct Node *head = NULL;
     char name[100];
     int score;
 
-    while (fscanf(file, "%s %d", name, &score) == 2) {
-        addNode(&head, name, score);
+    while (fscanf(file, "%s %d", name, &score) == 2)
+    {
+        head = addNode(head, name, score);
     }
 
     fclose(file);
     return head;
 }
 
-void showLeaderboard() {
+void showLeaderboard()
+{
     FILE *file = fopen("leaderboard/leaderboard.txt", "r");
-    
-    if (file == NULL) {
+
+    if (file == NULL)
+    {
         printf("Erro ao abrir o arquivo leaderboard.txt\n");
         return;
     }
 
     char name[50];
-    int points;  
+    int points;
 
     printf("\n\n--- Leaderboard ---\n");
     printf("  Jogador:      Pontos:\n");
     printf("  ---------------------\n");
-    
-    while (fscanf(file, "%s %d", name, &points) == 2) {
+
+    while (fscanf(file, "%s %d", name, &points) == 2)
+    {
         printf("%-12s %d\n", name, points);
     }
 
     fclose(file);
 }
 
-
-void freeList(struct Node *head) {
+void freeList(struct Node *head)
+{
     struct Node *temp;
-    while (head != NULL) {
+    while (head != NULL)
+    {
         temp = head;
         head = head->next;
-        free(temp->name); 
+        free(temp->name);
         free(temp);
     }
 }
+
 
