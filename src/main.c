@@ -20,7 +20,7 @@
 #define COLOR_BULLET YELLOW
 #define MAX_BULLETS 8
 #define ZOMBIE_SPAWN_INTERVAL 30
-#define GAME_DURATION 35 * 75
+#define GAME_DURATION 25 * 75
 
 
 // Structs
@@ -517,39 +517,57 @@ int isWall(int x, int y)
 
 
 // Função Geral do Zumbi (movimentação e colisão)
+int zombieMoveTimer = 0;
+int zombieMoveSpeed = 75 / 25; 
 
 void updateZombie(struct Zombie *zombie, struct Clint *clint) {
+    zombieMoveTimer++;
 
-        // Calcula a diferença entre as coordenadas do zumbi e do Clint
-        int dx = clint->coords.x - zombie->coords.x;
-        int dy = clint->coords.y - zombie->coords.y;
+    if (zombieMoveTimer < zombieMoveSpeed) {
+        return; 
+    }
 
-        // Mov. zumbi ao Clint
-        if (abs(dx) > abs(dy))
-        {
-            zombie->coords.x += (dx > 0) - (dx < 0);
-        }
-        else
-        {
-            zombie->coords.y += (dy > 0) - (dy < 0);
-        }
+    zombieMoveTimer = 0;
 
-        // Verifica colisão com a parede *DEPOIS* de mover o zumbi
-        if (isWall(zombie->coords.x, zombie->coords.y))
-        {
-            // Colisão com parede -> desfaz movimento
-            if (abs(dx) > abs(dy))
-            {
-                zombie->coords.x -= (dx > 0) - (dx < 0);
-            }
-            else
-            {
-                zombie->coords.y += (dy > 0) - (dy < 0);
-            }
+    int dx = clint->coords.x - zombie->coords.x;
+    int dy = clint->coords.y - zombie->coords.y;
+
+    // Aleatoriedade no movimento (para evitar que fiquem presos)
+    if (rand() % 10 == 0) {
+        if (rand() % 2 == 0) {
+            dx += (rand() % 3) - 1; 
+        } else {
+            dy += (rand() % 3) - 1;
         }
+    }
+
+
+    // Movimento diagonal
+    if (dx != 0 && dy != 0) {
+        zombie->coords.x += (dx > 0) - (dx < 0);
+        zombie->coords.y += (dy > 0) - (dy < 0);
+
+    } else if (abs(dx) > abs(dy)) {
+        zombie->coords.x += (dx > 0) - (dx < 0);
+    } else {
+        zombie->coords.y += (dy > 0) - (dy < 0);
+    }
+
+
+
+    // Verifica colisão com a parede *DEPOIS* de mover o zumbi
+    if (isWall(zombie->coords.x, zombie->coords.y)) {
+        // Desfaz o movimento em caso de colisão
+        if (dx != 0 && dy != 0) {
+            zombie->coords.x -= (dx > 0) - (dx < 0);
+            zombie->coords.y -= (dy > 0) - (dy < 0);
+        } else if (abs(dx) > abs(dy)) {
+            zombie->coords.x -= (dx > 0) - (dx < 0);
+        } else {
+            zombie->coords.y -= (dy > 0) - (dy < 0);
+        }
+    }
 }
-
-
 
 // Função que atualiza a bala
 
