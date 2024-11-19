@@ -56,6 +56,12 @@ struct Bullet
     int onScreen;
 };
 
+struct Node{
+    char *name;
+    int score;
+    struct Node *next;
+}
+
 /* Variáveis Globais */
 int lastSpawnFrame = 0;
 struct Zombie *zombies;
@@ -509,7 +515,7 @@ int main()
             {
                 frameCount++;
                 double remainingTime = GAME_DURATION / 75 - elapsedTime;
-                // char timeString[5];
+                
 
                 screenDrawMap();
                 drawClint(clint.coords.x, clint.coords.y);
@@ -531,7 +537,12 @@ int main()
                 screenGotoxy(0, MAP_HEIGHT);
                 printf("🔫: %d", clint.ammo);
                 screenGotoxy(MAP_WIDTH + 1, 1);
-                printf("⌛: %.0lf", remainingTime);
+                printf("⌛: ");
+                if (remainingTime < 10) {
+                    printf("0%.0lf", remainingTime);
+                } else {
+                    printf("%.0lf", remainingTime);
+                }
                 screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT);
                 printf("                             ");
                 screenGotoxy(MAP_WIDTH - 20, MAP_HEIGHT);
