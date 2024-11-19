@@ -16,22 +16,51 @@ Clint está cercado! Zumbis famintos se aproximam de todos os lados, e a única 
 
 Para executar o jogo, você precisa ter o WSL (Windows Subsystem for Linux) instalado em seu computador. Siga os passos abaixo:
 
-1. **Abra o prompt de comando (CMD) ou o PowerShell.**
-2. **Navegue até o diretório onde o jogo está localizado.**  Por exemplo, se a pasta do jogo estiver na sua área de trabalho, use os seguintes comandos:
+Para executar este projeto no WSL (Windows Subsystem for Linux), siga os passos abaixo:
+
+1. **Clone o repositório:**
    ```bash
-   cd Desktop
-   cd ClintVsZombies
+   git clone <URL_DO_SEU_REPOSITÓRIO>
    ```
-3. **Inicie o WSL:** Digite `wsl` e pressione Enter.
-4. **Compile o jogo:** No terminal WSL, execute o comando `make`.  
-    * **Se você não tiver o `make` instalado:** Você precisará instalá-lo.  No Ubuntu/Debian, você pode usar o seguinte comando: `sudo apt-get install make`.  Adapte o comando para sua distribuição Linux, se necessário.
-5. **Execute o jogo:** Após a compilação bem-sucedida, execute o jogo com o comando `./ClintVsZombies.out`.
 
-## Pré-requisitos
+2. **Instale o WSL:**
+   Abra o prompt de comando (CMD) ou o PowerShell como administrador e execute o seguinte comando:
+   ```bash
+   wsl install
+   ```
 
-* **WSL (Windows Subsystem for Linux):**  Certifique-se de ter o WSL instalado e configurado corretamente.  Você pode encontrar instruções de instalação no site da Microsoft.
-* **Make:** Certifique-se de ter o utilitário `make` instalado na sua distribuição WSL.
-* **Compilador C/C++:** O código-fonte do jogo provavelmente está em C ou C++, então você precisará de um compilador compatível instalado no WSL (como o GCC).
+3. **Instale o `make`:**
+   Inicie o WSL digitando `wsl` no terminal e pressione Enter. Em seguida, execute o comando:
+   ```bash
+   sudo apt-get update && sudo apt-get install make
+   ```
+
+4. **Navegue até a pasta do projeto:**
+   Dentro do WSL, navegue até o diretório onde o projeto foi clonado:
+   ```bash
+   cd <CAMINHO_PARA_A_PASTA>/ClintVsZombies
+   ```
+   Substitua `<CAMINHO_PARA_A_PASTA>` pelo caminho real para a pasta do projeto. Por exemplo:
+   ```bash
+   cd /mnt/c/Users/SeuUsuario/Documents/ClintVsZombies
+   ```
+
+5. **Compile e execute:**
+   Execute os seguintes comandos dentro do WSL:
+   ```bash
+   make clean
+   make
+   ./ClintVsZombies.out
+   ```
+
+**Observações:**
+
+* Certifique-se de ter os pré-requisitos necessários para compilar o projeto instalados no seu ambiente WSL (como compilador C/C++, bibliotecas, etc.).
+* O comando `make clean` remove arquivos compilados anteriormente, garantindo uma compilação limpa.
+* O comando `make` compila o projeto de acordo com o Makefile.
+* O comando `./ClintVsZombies.out` executa o arquivo binário gerado.
+* Adapte o nome do arquivo executável (`ClintVsZombies.out`) se necessário, de acordo com o nome definido no seu projeto.
+
 
 ## Capturas de Tela
 
