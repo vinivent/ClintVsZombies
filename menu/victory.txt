@@ -14,7 +14,7 @@
   .'.=.'                    `         `.\ [ Y         Você aguentou firme e seu fiel companheiro,
  /   /                                  \]  J              Pé de Pano chegou ao seu resgate.
 Y / Y                                    Y   L         
-| | |          \                         |   L         Insira 'q' para Sair ou 'r' para reiniciar!
+| | |          \                         |   L         Presione 'q' para Sair ou 'r' para reiniciar!
 | | |           Y                        A  J
 |   I           |                       /I\ /
 |    \          I             \        ( |]/|
