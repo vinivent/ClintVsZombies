@@ -676,8 +676,7 @@ int main()
                             clint.ammo--;
                             break;
                         }
-
-                if (!isWall(newX, newY) && newX >= 0 && newX < MAP_WIDTH && newY >= 0 && newY < MAP_HEIGHT)
+                if (!isWall(newX, newY) && !isWall(newX + 1, newY) && newX >= 0 && newX < MAP_WIDTH && newY >= 0 && newY < MAP_HEIGHT)
                 {
                     clint.coords.x = newX;
                     clint.coords.y = newY;
