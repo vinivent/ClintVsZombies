@@ -60,7 +60,7 @@ struct Node{
     char *name;
     int score;
     struct Node *next;
-}
+};
 
 /* Variáveis Globais */
 int lastSpawnFrame = 0;
@@ -450,13 +450,98 @@ void showGameOver()
 
 }
 
+struct Node* addNode(struct Node *head, char *name, int score) {
+    struct Node *newNode = (struct Node*)malloc(sizeof(struct Node));
+    if (!newNode) {
+        return head; 
+    }
+    newNode->name = strdup(name); 
+    newNode->score = score;
+    newNode->next = NULL;
+
+    if (!head || score > head->score) {
+        newNode->next = head;
+        return newNode;
+    }
+
+    struct Node *current = head;
+    while (current->next && score <= current->next->score) {
+        current = current->next;
+    }
+    newNode->next = current->next;
+    current->next = newNode;
+    return head;
+}
+
+
+void saveLeaderboard(struct Node *head) {
+    FILE *file = fopen("leaderboard/leaderboard.txt", "a");
+  
+    struct Node *current = head;
+    while (current != NULL) {
+        fprintf(file, "%s %d\n", current->name, current->score);
+        current = current->next;
+    }
+
+    fclose(file);
+}
+
+struct Node* loadLeaderboard() {
+    FILE *file = fopen("leaderboard/leaderboard.txt", "a");
+
+    struct Node *head = NULL;
+    char name[100];
+    int score;
+
+    while (fscanf(file, "%s %d", name, &score) == 2) {
+        head = addNode(head, name, score);
+    }
+
+    fclose(file);
+    return head;
+}
+
+void showLeaderboard() {
+    FILE *file = fopen("leaderboard/leaderboard.txt", "r");
+    
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo leaderboard.txt\n");
+        return;
+    }
+
+    char name[50];
+    int points;  
+
+    printf("\n\n--- Leaderboard ---\n");
+    printf("Jogador:      Pontos:\n");
+    printf("--------------------\n");
+    
+    while (fscanf(file, "%s %d", name, &points) == 2) {
+        printf("%-12s %d\n", name, points);
+    }
+
+    fclose(file);
+}
+
+
+void freeList(struct Node *head) {
+    struct Node *temp;
+    while (head != NULL) {
+        temp = head;
+        head = head->next;
+        free(temp->name); // Free the allocated name string
+        free(temp);
+    }
+}
+
+
 int main()
 {
     screenInit(0);
     keyboardInit();
     timerInit(75);
     srand(time(NULL));
-
+    struct Node *leaderboard = loadLeaderboard();
     int showMenu = 1;
 
     while (1)
@@ -549,7 +634,7 @@ int main()
                 for (int i = 0; i < clint.health; i++)
                     printf("❤️");
 
-                if (elapsedTime >= GAME_DURATION / 75 && score >= 8)
+                if (elapsedTime >= GAME_DURATION / 75)
                 {
                     showVictory();
                     while (1)
@@ -574,7 +659,13 @@ int main()
                                 break;
                             }
                             else if (key == 'q')
-                            {
+                            {   char playerName[100];
+                                printf("Insira seu nome: ");
+                                scanf("%s", playerName);
+                                leaderboard = addNode(leaderboard, playerName, score);
+                                saveLeaderboard(leaderboard);
+                                showLeaderboard();
+                                freeList(leaderboard);
                                 free(bullets);
                                 free(zombies);
                                 return 0;
@@ -583,40 +674,7 @@ int main()
                     }
                     break;
                 }
-                else if (elapsedTime >= GAME_DURATION / 75 && !(score >= 8))
-                { // Duração
-                    showGameOver();
-                    while (1)
-                    {
-                        if (keyhit())
-                        {
-                            int key = readch();
-                            if (key == 'r')
-                            {
-                                clint.health = 10;
-                                clint.ammo = 8;
-                                clint.coords.x = MAP_WIDTH / 2;
-                                clint.coords.y = MAP_HEIGHT / 2;
-                                score = 0;
-                                numZombies = 0;
-                                memset(bullets, 0, MAX_BULLETS * sizeof(struct Bullet));
-                                memset(zombies, 0, zombieCapacity * sizeof(struct Zombie));
-                                system("clear");
-                                time(&startTime);
-                                lastSpawnFrame = 0;
-                                frameCount = 0;
-                                break;
-                            }
-                            else if (key == 'q')
-                            {
-                                free(bullets);
-                                free(zombies);
-                                return 0;
-                            }
-                        }
-                    }
-                }
-
+        
                 if (clint.health <= 0)
                 { // Morrer
                     showGameOver();
@@ -695,6 +753,7 @@ int main()
             }
         }
 
+        freeList(leaderboard);
         free(bullets);
         free(zombies);
         bullets = NULL;
