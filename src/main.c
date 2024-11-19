@@ -150,7 +150,7 @@ struct Node* addNode(struct Node *head, char *name, int score) {
 
 
 void saveLeaderboard(struct Node *head) {
-    FILE *file = fopen("leaderboard/leaderboard.txt", "a");
+    FILE *file = fopen("leaderboard/leaderboard.txt", "w");
   
     struct Node *current = head;
     while (current != NULL) {
@@ -162,8 +162,17 @@ void saveLeaderboard(struct Node *head) {
 }
 
 struct Node* loadLeaderboard() {
-    FILE *file = fopen("leaderboard/leaderboard.txt", "a");
-
+    FILE *file = fopen("leaderboard/leaderboard.txt", "r");
+    if (!file) {
+        fclose(file);
+        file = fopen("leaderboard/leaderboard.txt", "w");
+        if (!file) {
+             perror("Erro ao criar o arquivo leaderboard.txt");
+             return NULL;
+        }
+        fclose(file);
+        return NULL; 
+     }
     struct Node *head = NULL;
     char name[100];
     int score;
