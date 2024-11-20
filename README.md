@@ -1,6 +1,6 @@
 #  <h1 align="center"> Clint vs Zombies 🤠 </h1>
 
-Um jogo de sobrevivência onde Clint, o caubói solitário, precisa enfrentar hordas de zumbis enquanto aguarda o resgate do seu fiel companheiro, Pé de Pano, em um tempo de 35 segundos.
+Um jogo de sobrevivência onde Clint, o caubói solitário, precisa enfrentar hordas de zumbis enquanto aguarda o resgate do seu fiel companheiro, Pé de Pano, em um tempo de 60 segundos.
 
 ## 🌵 Visão Geral
 
