@@ -44,6 +44,7 @@ struct Clint
 struct Zombie
 {
     struct Position coords;
+    int zombieMoveTimer;
     int health;
     int onScreen;
 };
@@ -72,6 +73,8 @@ int lastSpawnFrame = 0;
 int numZombies = 0;
 int reloadTime = 0;
 int score = 0;
+int zombieMoveTimer = 0;
+int zombieMoveSpeed = 75 / 20; 
 
 
 // Chamadas das funções
@@ -517,17 +520,15 @@ int isWall(int x, int y)
 
 
 // Função Geral do Zumbi (movimentação e colisão)
-int zombieMoveTimer = 0;
-int zombieMoveSpeed = 75 / 15; 
 
 void updateZombie(struct Zombie *zombie, struct Clint *clint) {
-    zombieMoveTimer++;
+    zombie->zombieMoveTimer++;
 
-    if (zombieMoveTimer < zombieMoveSpeed) {
+    if (zombie->zombieMoveTimer < zombieMoveSpeed) {
         return; 
     }
 
-    zombieMoveTimer = 0;
+    zombie->zombieMoveTimer = 0;
 
     int dx = clint->coords.x - zombie->coords.x;
     int dy = clint->coords.y - zombie->coords.y;
@@ -541,33 +542,23 @@ void updateZombie(struct Zombie *zombie, struct Clint *clint) {
         }
     }
 
-
-    // Movimento diagonal
-    if (dx != 0 && dy != 0) {
-        zombie->coords.x += (dx > 0) - (dx < 0);
-        zombie->coords.y += (dy > 0) - (dy < 0);
-
-    } else if (abs(dx) > abs(dy)) {
-        zombie->coords.x += (dx > 0) - (dx < 0);
+    if (abs(dx) > abs(dy)) {
+        zombie->coords.x += (dx > 0) - (dx < 0);  
     } else {
-        zombie->coords.y += (dy > 0) - (dy < 0);
+        zombie->coords.y += (dy > 0) - (dy < 0);  
     }
 
-
-
-    // Verifica colisão com a parede *DEPOIS* de mover o zumbi
+    // Colisão com a parede *DEPOIS* de mover o zumbi
     if (isWall(zombie->coords.x, zombie->coords.y)) {
         // Desfaz o movimento em caso de colisão
-        if (dx != 0 && dy != 0) {
-            zombie->coords.x -= (dx > 0) - (dx < 0);
-            zombie->coords.y -= (dy > 0) - (dy < 0);
-        } else if (abs(dx) > abs(dy)) {
+        if (abs(dx) > abs(dy)) {
             zombie->coords.x -= (dx > 0) - (dx < 0);
         } else {
             zombie->coords.y -= (dy > 0) - (dy < 0);
         }
     }
 }
+
 
 // Função que atualiza a bala
 
