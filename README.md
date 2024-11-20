@@ -60,7 +60,22 @@ Para executar este projeto no WSL (Windows Subsystem for Linux), siga os passos 
 * O comando `make` compila o projeto de acordo com o Makefile.
 * O comando `./ClintVsZombies.out` executa o arquivo binário gerado.
 * Adapte o nome do arquivo executável (`ClintVsZombies.out`) se necessário, de acordo com o nome definido no seu projeto.
+<br>
 
+**Makefile:**
+<br>
+Este Makefile irá automatizar as etapas de compilação, execução e limpeza do projeto, tornando o processo mais eficiente e fácil de usar.
+
+```bash
+all:
+	gcc ./src/*.c -I./include -o ClintVsZombies.out -lm
+
+run:
+	./ClintVsZombies.out
+
+clean:
+	rm ClintVsZombies.out
+```
 
 ## 🐎 Capturas de Tela
 
